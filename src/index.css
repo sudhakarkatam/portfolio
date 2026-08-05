@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    border-color: theme('colors.zinc.200');
+  }
+  .dark * {
+    border-color: theme('colors.zinc.800');
+  }
+
+  html {
+    font-size: 90%;
+    /* Reduce overall text by 10% — matches old portfolio sizing */
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply antialiased;
+    font-size: 1.08rem;
+    /* base * 0.9 */
+    /* Premium Smooth Page Transition */
+    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+
+  /* Smooth transition for commonly changed properties on other elements */
+  div,
+  button,
+  input,
+  header,
+  section,
+  span,
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  a {
+    transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
+  }
+
+  /* Mobile touch enhancements */
+  @media (max-width: 768px) {
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    button,
+    .button {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    input,
+    textarea {
+      font-size: 16px;
+      /* Prevents zoom on iOS */
+    }
+  }
+
+  /* Safe area padding for mobile devices with notches */
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* Custom Utilities & Animations */
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Sudhakar Reddy Katam | AI Portfolio",
+  "short_name": "Sudhakar Portfolio",
+  "description": "AI-powered portfolio showcasing projects, skills, and experience in software engineering",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1e40af",
+  "orientation": "portrait-primary",
+  "categories": ["portfolio", "technology", "software"],
+  "lang": "en",
+  "scope": "/"
+}

@@ -1,0 +1,12 @@
+# Netlify SPA fallback - handles client-side routing
+/*    /index.html   200
+
+# Cache static assets for better performance
+/favicon.ico    /favicon.ico    200
+/manifest.json  /manifest.json  200
+/icon-192.svg   /icon-192.svg   200
+/icon-512.svg   /icon-512.svg   200
+/*.svg          /placeholder.svg 200
+
+# API routes - forward /api/* to Netlify Functions
+/api/*   /.netlify/functions/:splat   200
