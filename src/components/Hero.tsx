@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { motion, Variants } from "framer-motion";
+import { useISTClock } from "@/hooks/useISTClock";
 
 interface HeroProps {
   name: string;
@@ -15,25 +16,7 @@ interface HeroProps {
 }
 
 export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) => {
-  const [timeStr, setTimeStr] = useState("");
-
-  // Live IST Clock
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const formatter = new Intl.DateTimeFormat("en-US", {
-        timeZone: "Asia/Kolkata",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-      setTimeStr(formatter.format(now));
-    };
-
-    updateTime();
-    const timer = setInterval(updateTime, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const timeStr = useISTClock("12h");
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -78,6 +61,7 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
               "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1200&auto=format&fit=crop";
           }}
           alt="Hero Banner"
+          loading="lazy"
           className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-[1.03] transition-transform duration-700"
         />
 
@@ -113,6 +97,7 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
                 src="/profile pic.png"
                 className="w-full h-full object-cover bg-zinc-100 dark:bg-zinc-900"
                 alt={name}
+                loading="lazy"
               />
             </div>
             {/* Online indicator */}
@@ -121,14 +106,14 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
 
           <div className="space-y-2 sm:space-y-3 text-left flex-1 min-w-0">
             {/* Full Name - Two Line Layout */}
-            <div>
-              <h1 className="text-2xl sm:text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-white leading-[1.1]">
+            <h1>
+              <span className="block text-2xl sm:text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-white leading-[1.1]">
                 Sudhakar
-              </h1>
-              <h1 className="text-2xl sm:text-5xl font-extrabold tracking-tight text-zinc-600 dark:text-zinc-400 leading-[1.1]">
+              </span>
+              <span className="block text-2xl sm:text-5xl font-extrabold tracking-tight text-zinc-600 dark:text-zinc-400 leading-[1.1]">
                 Reddy Katam
-              </h1>
-            </div>
+              </span>
+            </h1>
 
             {/* Subtitle with badges */}
             <div className="flex flex-wrap items-center gap-2 justify-start">

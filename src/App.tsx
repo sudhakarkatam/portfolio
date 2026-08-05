@@ -1,8 +1,9 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import PortfolioPage from "./pages/PortfolioPage";
 import ProjectsPage from "./pages/ProjectsPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 export const App: React.FC = () => {
   return (
@@ -11,7 +12,7 @@ export const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<PortfolioPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );

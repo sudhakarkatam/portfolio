@@ -135,7 +135,7 @@ export const portfolioData: PortfolioData = {
         "Supabase",
         "Vercel",
       ],
-      github: "https://www.purevaluepicks.store",
+      github: "",
       link: "https://www.purevaluepicks.store",
       status: "Live",
       category: "E-Commerce",

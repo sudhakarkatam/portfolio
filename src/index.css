@@ -20,26 +20,8 @@
     @apply antialiased;
     font-size: 1.08rem;
     /* base * 0.9 */
-    /* Premium Smooth Page Transition */
-    transition: background-color 0.5s ease, color 0.5s ease;
-  }
-
-  /* Smooth transition for commonly changed properties on other elements */
-  div,
-  button,
-  input,
-  header,
-  section,
-  span,
-  p,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  a {
-    transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
+    /* Premium Smooth Page Theme Transition */
+    transition: background-color 0.4s ease, color 0.4s ease;
   }
 
   /* Mobile touch enhancements */

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import { Copy, Check, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { useISTClock } from "@/hooks/useISTClock";
 
 interface ContactProps {
   contact: {
@@ -15,7 +16,7 @@ interface ContactProps {
 }
 
 export const Contact: React.FC<ContactProps> = ({ contact }) => {
-  const [timeStr, setTimeStr] = useState("");
+  const timeStr = useISTClock("24h");
   const [copied, setCopied] = useState(false);
 
   const handleCopyEmail = (e: React.MouseEvent) => {
@@ -25,25 +26,6 @@ export const Contact: React.FC<ContactProps> = ({ contact }) => {
     toast.success("Email copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);
   };
-
-  // Live IST Clock for footer
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const formatter = new Intl.DateTimeFormat("en-US", {
-        timeZone: "Asia/Kolkata",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      });
-      setTimeStr(formatter.format(now));
-    };
-
-    updateTime();
-    const timer = setInterval(updateTime, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   return (
     <section id="contact" className="scroll-mt-24 space-y-10">

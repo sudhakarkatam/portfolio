@@ -11,7 +11,7 @@ export const AboutSection: React.FC = () => {
         </div>
         <div className="flex items-center gap-4">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-            about
+            About
           </h2>
           <div className="h-px flex-1 bg-gradient-to-r from-zinc-300 dark:from-zinc-700 to-transparent" />
         </div>

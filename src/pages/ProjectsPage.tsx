@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { portfolioData } from "@/data/portfolioData";
-import { Navbar } from "@/components/Navbar";
+import { PageLayout } from "@/components/PageLayout";
 import { FaGithub } from "react-icons/fa6";
 import { ArrowUpRight, Terminal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,25 +11,10 @@ export const ProjectsPage: React.FC = () => {
   const { projects } = portfolioData;
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
-  // Manage theme state
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    const saved = localStorage.getItem("portfolio-theme");
-    return (saved as "light" | "dark") || "dark";
-  });
-
-  // Sync dark mode
+  // Scroll to top on mount
   useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-      document.body.style.backgroundColor = "#0a0a0c";
-      document.body.style.color = "#f4f4f5";
-    } else {
-      document.documentElement.classList.remove("dark");
-      document.body.style.backgroundColor = "#fafafa";
-      document.body.style.color = "#18181b";
-    }
-    localStorage.setItem("portfolio-theme", theme);
-  }, [theme]);
+    window.scrollTo(0, 0);
+  }, []);
 
   // Extract categories dynamically
   const categories = useMemo(() => {
@@ -55,39 +40,8 @@ export const ProjectsPage: React.FC = () => {
     }
   };
 
-  const handleToggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  };
-
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0c] text-zinc-900 dark:text-[#f4f4f5] font-sans selection:bg-[#eaeaea]/20 relative transition-colors duration-300">
-
-      {/* Background Grid Pattern */}
-      <div
-        className="fixed inset-0 pointer-events-none z-0 opacity-40 dark:opacity-30"
-        style={{
-          backgroundImage: theme === "dark"
-            ? `
-              linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px)
-            `
-            : `
-              linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
-            `,
-          backgroundSize: '48px 48px',
-          maskImage: 'radial-gradient(circle at center, black 40%, transparent 95%)',
-          WebkitMaskImage: 'radial-gradient(circle at center, black 40%, transparent 95%)'
-        }}
-      />
-
-      {/* Capsule Navigation Navbar */}
-      <Navbar
-        activeSection="projects"
-        onNavigate={handleNavigateNavbar}
-        theme={theme}
-        onToggleTheme={handleToggleTheme}
-      />
+    <PageLayout activeSection="projects" onNavigate={handleNavigateNavbar}>
 
       {/* Main Column aligned to 780px centered container */}
       <main className="relative z-10 mx-auto max-w-[780px] px-4 sm:px-6 pt-8 sm:pt-28 pb-28 sm:pb-24 space-y-10">
@@ -169,6 +123,7 @@ export const ProjectsPage: React.FC = () => {
                           rel="noreferrer"
                           className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors p-1 rounded hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
                           title="GitHub Repository"
+                          aria-label={`View ${project.title} on GitHub`}
                         >
                           <FaGithub size={16} />
                         </a>
@@ -180,6 +135,7 @@ export const ProjectsPage: React.FC = () => {
                           rel="noreferrer"
                           className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-bold transition-colors p-1 rounded hover:bg-emerald-500/10 group/link"
                           title="Live Site"
+                          aria-label={`Visit ${project.title} live site`}
                         >
                           <ArrowUpRight size={16} className="group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
                         </a>
@@ -211,7 +167,7 @@ export const ProjectsPage: React.FC = () => {
         </motion.div>
 
       </main>
-    </div>
+    </PageLayout>
   );
 };
 
