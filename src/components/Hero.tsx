@@ -62,7 +62,7 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
           }}
           alt="Hero Banner"
           loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-[1.03] transition-transform duration-700"
+          className="absolute inset-0 w-full h-full object-cover object-[center_40%] group-hover:scale-[1.03] transition-transform duration-700"
         />
 
         {/* Gradient overlays for smooth blending into page */}
@@ -173,3 +173,4 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
     </motion.div>
   );
 };
+export default Hero;

@@ -140,11 +140,21 @@ export const Contact: React.FC<ContactProps> = ({ contact }) => {
         </div>
       </div>
 
-      {/* Marcus Aurelius Quote */}
-      <div className="text-center pt-1">
-        <p className="text-xs text-zinc-400 dark:text-zinc-600 italic max-w-md mx-auto leading-relaxed">
-          "It is not death that a man should fear, but he should fear never beginning to live." — Marcus Aurelius
-        </p>
+      {/* ── Marcus Aurelius Quote Card (Dotted Border) ── */}
+      <div className="relative max-w-xl mx-auto rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-800 bg-white/60 dark:bg-[#070709] p-6 sm:p-7 text-center overflow-hidden shadow-sm">
+        {/* Giant watermark quote mark */}
+        <span className="absolute -top-3 left-4 text-7xl font-serif select-none pointer-events-none opacity-[0.06] dark:opacity-[0.1] text-zinc-900 dark:text-white">
+          “
+        </span>
+
+        <div className="relative z-10 space-y-2 max-w-lg mx-auto">
+          <p className="text-sm sm:text-base italic font-medium text-zinc-700 dark:text-zinc-300 leading-relaxed">
+            "It is not death that a man should fear, but he should fear never beginning to live."
+          </p>
+          <p className="text-xs font-mono text-zinc-400 dark:text-zinc-500">
+            — Marcus Aurelius
+          </p>
+        </div>
       </div>
 
       {/* Page Footer */}
