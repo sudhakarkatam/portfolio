@@ -39,7 +39,7 @@ export interface PortfolioData {
 export const portfolioData: PortfolioData = {
   name: "Sudhakar Reddy Katam",
   title: "Aspiring Software Engineer | Building with AI & Web",
-  bio: "I'm a developer who loves learning by building. You'll usually find me working on something new. I'm comfortable across the full stack and I like pushing myself to learn and build things that actually matter. I am curious about tech and trying every possible new tech comes out there.",
+  bio: "I'm a developer who loves learning by building. I'm comfortable across the full stack and I like pushing myself to learn and build things . I am curious about tech and how it's going in this era, interested in both software and hardware  ",
 
   skills: [
     { name: "React", category: "Frontend", icon: "Code2" },

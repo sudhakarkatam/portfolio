@@ -27,6 +27,33 @@ export const Contact: React.FC<ContactProps> = ({ contact }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const socialButtons = [
+    {
+      icon: FaGithub,
+      href: contact.github,
+      label: "GitHub",
+      hoverStyle: "hover:border-zinc-800 dark:hover:border-zinc-200 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-900/10 dark:hover:bg-white/10",
+    },
+    {
+      icon: FaLinkedin,
+      href: contact.linkedin,
+      label: "LinkedIn",
+      hoverStyle: "hover:border-[#0A66C2]/60 hover:text-[#0A66C2] dark:hover:text-[#388ee6] hover:bg-[#0A66C2]/10",
+    },
+    {
+      icon: FaXTwitter,
+      href: contact.twitter,
+      label: "X",
+      hoverStyle: "hover:border-zinc-800 dark:hover:border-zinc-200 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-900/10 dark:hover:bg-white/10",
+    },
+    {
+      icon: MdEmail,
+      href: `mailto:${contact.email}`,
+      label: "Email",
+      hoverStyle: "hover:border-indigo-500/60 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-500/10",
+    },
+  ];
+
   return (
     <section id="contact" className="scroll-mt-24 space-y-10">
 
@@ -65,9 +92,10 @@ export const Contact: React.FC<ContactProps> = ({ contact }) => {
             <div className="pt-1 flex flex-wrap items-center gap-3">
               <a
                 href={`mailto:${contact.email}`}
-                className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-zinc-950 dark:bg-white text-white dark:text-black font-bold text-xs sm:text-sm rounded-full hover:scale-[1.03] transition-all shadow-lg hover:shadow-xl dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.15)] cursor-pointer outline-none"
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-zinc-950 dark:bg-white text-white dark:text-black font-bold text-xs sm:text-sm rounded-full hover:scale-[1.03] transition-all shadow-lg hover:shadow-xl dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.15)] cursor-pointer outline-none group"
               >
-                {contact.email}
+                <MdEmail size={17} className="group-hover:scale-110 transition-transform" />
+                <span>{contact.email}</span>
               </a>
               <button
                 onClick={handleCopyEmail}
@@ -78,32 +106,27 @@ export const Contact: React.FC<ContactProps> = ({ contact }) => {
               </button>
             </div>
 
-            {/* ── Social Links as Labeled Pill Buttons ── */}
+            {/* ── Social Links as Labeled Pill Buttons with Branded Hover ── */}
             <div className="flex flex-wrap items-center gap-2.5 pt-2">
               {contact.resume && (
                 <a
                   href={contact.resume}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 text-zinc-700 dark:text-zinc-300 text-xs font-semibold hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 hover:scale-[1.03] transition-all duration-300"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 text-zinc-700 dark:text-zinc-300 text-xs font-semibold hover:border-emerald-500/60 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/10 hover:scale-[1.03] transition-all duration-300"
                 >
                   <FileText size={14} />
                   Resume
                 </a>
               )}
-              {[
-                { icon: FaGithub, href: contact.github, label: "GitHub" },
-                { icon: FaLinkedin, href: contact.linkedin, label: "LinkedIn" },
-                { icon: FaXTwitter, href: contact.twitter, label: "X" },
-                { icon: MdEmail, href: `mailto:${contact.email}`, label: "Email" },
-              ].map((social, idx) =>
+              {socialButtons.map((social, idx) =>
                 social.href ? (
                   <a
                     key={idx}
                     href={social.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 text-zinc-700 dark:text-zinc-300 text-xs font-semibold hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 hover:scale-[1.03] hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(255,255,255,0.06)] transition-all duration-300"
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 text-zinc-700 dark:text-zinc-300 text-xs font-semibold hover:scale-[1.03] transition-all duration-300 ${social.hoverStyle}`}
                     title={social.label}
                   >
                     <social.icon size={14} />
