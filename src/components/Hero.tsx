@@ -68,14 +68,6 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
         {/* Gradient overlays for smooth blending into page */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#fafafa] dark:to-[#0a0a0c]" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#fafafa]/40 dark:from-[#0a0a0c]/40 via-transparent to-[#fafafa]/40 dark:to-[#0a0a0c]/40" />
-        {/* Subtle color tint */}
-        <div
-          className="absolute inset-0 opacity-15"
-          style={{
-            backgroundImage: `radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
-                              radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.15) 0%, transparent 40%)`,
-          }}
-        />
         {/* Noise texture */}
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")` }} />
       </motion.div>
@@ -156,9 +148,6 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
       {/* ── Status Ticker Bar ── */}
       <motion.div variants={itemVariants} className="pt-1">
         <div className="relative flex flex-wrap items-center justify-between gap-y-2 gap-x-4 py-3.5 border-t border-b border-zinc-200 dark:border-zinc-800/80 font-mono text-xs text-zinc-500 dark:text-zinc-400">
-          {/* Subtle gradient overlay on borders */}
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
 
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
