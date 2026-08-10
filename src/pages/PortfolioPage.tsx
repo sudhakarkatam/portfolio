@@ -14,36 +14,6 @@ export const PortfolioPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("about");
 
-  // Dynamically crop browser tab title bar favicon into a perfect round circle
-  useEffect(() => {
-    const img = new Image();
-    img.src = "/profile pic.png";
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      const size = 64;
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.beginPath();
-        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.clip();
-        
-        ctx.drawImage(img, 0, 0, size, size);
-
-        let link = document.querySelector<HTMLLinkElement>("link[rel*='icon']");
-        if (!link) {
-          link = document.createElement("link");
-          link.rel = "icon";
-          document.head.appendChild(link);
-        }
-        link.type = "image/png";
-        link.href = canvas.toDataURL("image/png");
-      }
-    };
-  }, []);
-
   // Handle initial route for /projects or #contact hash
   useEffect(() => {
     if (location.pathname === "/projects") {

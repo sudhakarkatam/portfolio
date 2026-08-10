@@ -1,21 +1,28 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import PortfolioPage from "./pages/PortfolioPage";
-import ProjectsPage from "./pages/ProjectsPage";
-import NotFoundPage from "./pages/NotFoundPage";
+
+const ProjectsPage = lazy(() => import("./pages/ProjectsPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Toaster position="top-center" richColors />
-      <Routes>
-        <Route path="/" element={<PortfolioPage />} />
-        <Route path="/projects" element={<ProjectsPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      <Suspense fallback={
+        <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0c] flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      }>
+        <Routes>
+          <Route path="/" element={<PortfolioPage />} />
+          <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
       <Analytics />
       <SpeedInsights />
     </BrowserRouter>

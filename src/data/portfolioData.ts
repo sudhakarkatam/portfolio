@@ -84,8 +84,8 @@ export const portfolioData: PortfolioData = {
         "Task and habit management",
         "Streak and skip tracking system",
       ],
-      images: ["/personal-tracker.jpeg", "/personal-tracker-1.jpeg"],
-      image: "/personal-tracker.jpeg",
+      images: ["/personal-tracker.webp", "/personal-tracker-1.webp"],
+      image: "/personal-tracker.webp",
       learnings: [
         "Offline-first application development",
         "Mobile app performance optimization",
@@ -114,8 +114,8 @@ export const portfolioData: PortfolioData = {
         "Interactive result charts and amortization tables",
         "Responsive layout for all screen sizes",
       ],
-      images: ["/financial-calculator.jpeg", "/financial-calculator-1.jpeg"],
-      image: "/financial-calculator.jpeg",
+      images: ["/financial-calculator.webp", "/financial-calculator-1.webp"],
+      image: "/financial-calculator.webp",
       learnings: [
         "Financial calculation algorithms",
         "Progressive Web App optimization",

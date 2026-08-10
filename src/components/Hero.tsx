@@ -38,7 +38,7 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
     },
   };
 
-  const bannerSrc = bannerImage || "/banner image.png";
+  const bannerSrc = bannerImage || "/banner-image.webp";
 
   return (
     <motion.div
@@ -61,7 +61,8 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
               "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1200&auto=format&fit=crop";
           }}
           alt="Hero Banner"
-          loading="lazy"
+          fetchPriority="high"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover object-[center_40%] group-hover:scale-[1.03] transition-transform duration-700"
         />
 
@@ -86,10 +87,11 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
           >
             <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-zinc-200 dark:border-zinc-700 shadow-xl ring-2 sm:ring-4 ring-zinc-100 dark:ring-zinc-900/80">
               <img
-                src="/profile pic.png"
+                src="/profile-pic.webp"
                 className="w-full h-full object-cover bg-zinc-100 dark:bg-zinc-900"
                 alt={name}
-                loading="lazy"
+                fetchPriority="high"
+                decoding="async"
               />
             </div>
             {/* Online indicator */}
@@ -116,7 +118,7 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
 
             {/* Plain text update date and live IST clock */}
             <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium pt-1">
-              Updated Aug 06, 2026 · {timeStr || "8:44 AM"} in India
+              Updated Aug 10, 2026 · {timeStr || "8:44 AM"} in India
             </p>
           </div>
         </div>

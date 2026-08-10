@@ -2,23 +2,27 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/profile pic.png" />
+    <link rel="icon" type="image/png" href="/favicon-round.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sudhakar Reddy Katam — Portfolio</title>
     <meta name="description" content="Engineer with many interests, building full-stack web apps, AI features, and mobile tools." />
+
+    <!-- Image Preloads for LCP Optimization -->
+    <link rel="preload" as="image" href="/profile-pic.webp" type="image/webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/banner-image.webp" type="image/webp" fetchpriority="high" />
 
     <!-- Open Graph / Social Preview -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Sudhakar Reddy Katam — Portfolio" />
     <meta property="og:description" content="Engineer with many interests, building full-stack web apps, AI features, and mobile tools." />
-    <meta property="og:image" content="/banner image.png" />
+    <meta property="og:image" content="/banner-image.webp" />
     <meta property="og:url" content="https://sudhakarkatam.netlify.app" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Sudhakar Reddy Katam — Portfolio" />
     <meta name="twitter:description" content="Engineer with many interests, building full-stack web apps, AI features, and mobile tools." />
-    <meta name="twitter:image" content="/banner image.png" />
+    <meta name="twitter:image" content="/banner-image.webp" />
     <meta name="twitter:creator" content="@sudhakarkatam2" />
 
     <!-- Canonical -->
@@ -27,12 +31,18 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#0a0a0c" />
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts Optimization -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/assets/index-CMBd0OkZ.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CuV8N5IS.css">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    </noscript>
+    <script type="module" crossorigin src="/assets/index-BLcVzWqb.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-DoGZ_piX.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-framer-FrPhWNZJ.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-ubljPqIx.css">
   </head>
   <body class="bg-[#fafafa] dark:bg-[#0a0a0c] text-zinc-900 dark:text-[#f4f4f5] antialiased">
     <div id="root"></div>
