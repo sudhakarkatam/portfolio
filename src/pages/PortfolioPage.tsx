@@ -63,6 +63,10 @@ export const PortfolioPage: React.FC = () => {
       if (location.pathname !== "/projects") {
         navigate("/projects");
       }
+    } else if (id === "resume") {
+      if (location.pathname !== "/resume") {
+        navigate("/resume");
+      }
     } else if (id === "contact") {
       setActiveSection("contact");
       if (location.pathname !== "/") {

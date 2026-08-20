@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import { Copy, Check, FileText } from "lucide-react";
@@ -108,17 +109,13 @@ export const Contact: React.FC<ContactProps> = ({ contact }) => {
 
             {/* ── Social Links as Labeled Pill Buttons with Branded Hover ── */}
             <div className="flex flex-wrap items-center gap-2.5 pt-2">
-              {contact.resume && (
-                <a
-                  href={contact.resume}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 text-zinc-700 dark:text-zinc-300 text-xs font-semibold hover:border-emerald-500/60 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/10 hover:scale-[1.03] transition-all duration-300"
-                >
-                  <FileText size={14} />
-                  Resume
-                </a>
-              )}
+              <Link
+                to="/resume"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-purple-500/30 bg-purple-500/5 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:border-purple-500/60 hover:scale-[1.03] transition-all duration-300 shadow-sm"
+              >
+                <FileText size={14} className="text-purple-500" />
+                <span>Interactive Resume</span>
+              </Link>
               {socialButtons.map((social, idx) =>
                 social.href ? (
                   <a

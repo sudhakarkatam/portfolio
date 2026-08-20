@@ -6,6 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import PortfolioPage from "./pages/PortfolioPage";
 
 const ProjectsPage = lazy(() => import("./pages/ProjectsPage"));
+const ResumePage = lazy(() => import("./pages/ResumePage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 export const App: React.FC = () => {
@@ -20,6 +21,7 @@ export const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<PortfolioPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/resume" element={<ResumePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

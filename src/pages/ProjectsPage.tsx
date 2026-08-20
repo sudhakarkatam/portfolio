@@ -35,6 +35,8 @@ export const ProjectsPage: React.FC = () => {
   const handleNavigateNavbar = (id: string) => {
     if (id === "contact") {
       navigate("/#contact");
+    } else if (id === "resume") {
+      navigate("/resume");
     } else if (id === "about") {
       navigate("/");
     }
