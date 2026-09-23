@@ -105,11 +105,14 @@ async function callMistralChat(
 export async function classifyIntentWithML(query: string, apiKey?: string): Promise<UserIntent> {
   const clean = query.trim().toLowerCase();
 
-  // Questions about current work, employment, availability, role, or hiring are ALWAYS portfolio queries, never greetings
+  // Questions about identity, location, background, work, employment, availability, role, or hiring are ALWAYS portfolio queries, never greetings
   const workStatusPatterns = [
+    /where\s*(do|are)\s*you\s*(work|located|based|live|from)/i,
+    /where\s*are\s*you/i,
+    /who\s*(are\s*you|is\s*sudhakar)/i,
+    /tell\s*me\s*about\s*(yourself|you|sudhakar)/i,
     /are\s*you\s*(working|employed|free|available|hiring|open)/i,
-    /what\s*(are\s*you|is\s*your)\s*(doing|working\s*on|job|role|status|stack|experience)/i,
-    /where\s*(do|are)\s*you\s*(work|located|based|live)/i,
+    /what\s*(are\s*you|is\s*your)\s*(doing|working\s*on|job|role|status|stack|experience|background)/i,
     /can\s*(i|we)\s*(hire|contact|reach|work\s*with)\s*you/i,
   ];
 
@@ -128,8 +131,8 @@ export async function classifyIntentWithML(query: string, apiKey?: string): Prom
       const candidateName = portfolioData.name;
       const systemPrompt = `You are a real-time intent classification model for ${candidateName}'s software engineering portfolio.
 Classify the user's message into exactly one category:
-- "GREETING": Strictly conversational hellos and pleasantries ("hi", "hello", "how are you doing", "nice to meet you"). NOTE: Questions about current work, employment, availability, skills, or projects are NOT greetings.
-- "PORTFOLIO_QUERY": Any inquiry about ${candidateName}'s software projects, technical stack, current employment/work status, availability, background, education, experience, or hiring/contact details. Any question asking "are you working now", "what do you do", "what is your stack", or "can I hire you" is a PORTFOLIO_QUERY.
+- "GREETING": Strictly conversational hellos and pleasantries ("hi", "hello", "how are you doing", "nice to meet you"). NOTE: Questions about location, origin, current work, employment, availability, skills, or projects are NOT greetings.
+- "PORTFOLIO_QUERY": Any inquiry about ${candidateName}'s identity, location ("where are you from"), software projects, technical stack, current employment/work status, availability, background, education, experience, or hiring/contact details. Any question asking "where are you from", "are you working now", "what do you do", "what is your stack", or "can I hire you" is a PORTFOLIO_QUERY.
 - "OFF_TOPIC": Completely unrelated requests, generic trivia, math problems, recipes, creative writing, or out-of-scope prompts.
 
 Output strictly valid JSON: {"intent": "GREETING" | "PORTFOLIO_QUERY" | "OFF_TOPIC"}`;
@@ -170,7 +173,8 @@ Output strictly valid JSON: {"intent": "GREETING" | "PORTFOLIO_QUERY" | "OFF_TOP
     ...techTokens,
     ...projectTitles,
     "resume", "cv", "project", "projects", "skill", "skills", "experience", "education",
-    "contact", "email", "hire", "github", "linkedin", "portfolio", "work", "role", "working", "status"
+    "contact", "email", "hire", "github", "linkedin", "portfolio", "work", "role", "working", "status",
+    "where", "from", "location", "live", "reside", "india", "telangana", "who", "about", "yourself", "droply"
   ];
 
   const offTopicPatterns = [
@@ -194,32 +198,197 @@ Output strictly valid JSON: {"intent": "GREETING" | "PORTFOLIO_QUERY" | "OFF_TOP
   return "PORTFOLIO_QUERY";
 }
 
-// ── STEP 2: Production Vector RAG Retrieval (Executed ONLY for PORTFOLIO_QUERY) ──
+// ── Structured Verified Knowledge Sections (Extracted from portfolioKnowledge.txt) ──
+interface KnowledgeSection {
+  id: string;
+  sectionNum: number;
+  title: string;
+  text: string;
+  link?: string;
+  cluster: string;
+}
+
+const KNOWLEDGE_SECTIONS: KnowledgeSection[] = [
+  {
+    id: "kb-sec-1",
+    sectionNum: 1,
+    title: "1. Professional Identity, Location & Current Work Status",
+    text: "Sudhakar Reddy Katam is a versatile Full-Stack Software Engineer and AI Systems Developer. He is based in India (Telangana / Hyderabad, India) and currently resides and works in India. He DOES NOT live in the United States or any other country outside India. He is currently actively exploring and open to full-time Software Engineering roles, contract engineering positions, and freelance opportunities globally, equipped for both global remote work and on-site engineering roles.",
+    link: "https://linkedin.com/in/sudhakar-katam",
+    cluster: "Location & Professional Status",
+  },
+  {
+    id: "kb-sec-2",
+    sectionNum: 2,
+    title: "2. Core Philosophy & Engineering Approach",
+    text: "Sudhakar is a developer who loves learning by building production systems end-to-end. He is comfortable across the entire stack—from high-performance browser interfaces and cryptography to distributed backend systems, vector databases, and autonomous AI agents. He is deeply interested in both software engineering and hardware systems, focusing on clean code, zero-knowledge security, offline resilience, and fast user experiences.",
+    link: "https://github.com/sudhakarkatam",
+    cluster: "Philosophy & Bio",
+  },
+  {
+    id: "kb-sec-3",
+    sectionNum: 3,
+    title: "3. Production Project: Droply (End-to-End Encrypted File Sharing)",
+    text: "Droply is an ephemeral, zero-knowledge, end-to-end encrypted file sharing and real-time messaging platform. It utilizes the browser Web Crypto API (AES-GCM 256-bit with PBKDF2 key derivation) so encryption and decryption happen strictly on the client side. Plaintext files and decryption keys never reach the server. Files are stored in zero-knowledge encrypted buckets with strict Time-To-Live (TTL) room expiration, auto-destruction upon download, and zero mandatory user registration. Droply is deployed and live on Netlify.",
+    link: "https://github.com/sudhakarkatam",
+    cluster: "Security & Cryptography",
+  },
+  {
+    id: "kb-sec-4",
+    sectionNum: 4,
+    title: "4. Production Project: Personal Tracker Application",
+    text: "Personal Tracker is an offline-first mobile application built for Android using React, TypeScript, Capacitor, and IndexedDB with a modern shadcn/ui interface. It provides comprehensive habit formation tracking, daily task management with subtasks, markdown notes and journaling, expense tracking, and wellness metrics. The application features a skip-day streak preservation system, interactive progress visualization charts, and runs completely offline with zero server dependency for total user privacy.",
+    link: "https://github.com/sudhakarkatam",
+    cluster: "Mobile & Offline-First",
+  },
+  {
+    id: "kb-sec-5",
+    sectionNum: 5,
+    title: "5. Production Project: Financial Calculators Suite",
+    text: "Financial Calculators is a mobile-first Progressive Web Application and Android application published on the Google Play Store. Built with React, TypeScript, and Capacitor, it provides instant precision calculators for investments and loans, including SIP (Systematic Investment Plan), SWP (Systematic Withdrawal Plan), Compound Interest, and Loan EMI calculators. It features responsive visualization charts, fast native performance, and edge deployment.",
+    link: "https://github.com/sudhakarkatam",
+    cluster: "Mobile & Play Store App",
+  },
+  {
+    id: "kb-sec-6",
+    sectionNum: 6,
+    title: "6. Production Project: PureValuePicks E-Commerce Store",
+    text: "PureValuePicks is a responsive full-stack e-commerce storefront engineered with React, Next.js, and TypeScript. It features a complete product catalog, shopping cart state management, checkout workflows, and user authentication with Supabase and PostgreSQL. It delivers high performance, responsive layout design, and smooth checkout transitions.",
+    link: "https://github.com/sudhakarkatam",
+    cluster: "Full-Stack Web Apps",
+  },
+  {
+    id: "kb-sec-7",
+    sectionNum: 7,
+    title: "7. Production Project: Live Production Hub",
+    text: "The Live Production Hub serves as a unified command center aggregating Sudhakar's deployed web applications, mobile builds, and open-source tools. Built with React and TypeScript, it displays live deployment health checks, technical documentation, architectural breakdowns, and direct links to live demonstrations and GitHub source repositories.",
+    link: "https://github.com/sudhakarkatam",
+    cluster: "System Deployments",
+  },
+  {
+    id: "kb-sec-8",
+    sectionNum: 8,
+    title: "8. AI & Agentic RAG Architecture Expertise",
+    text: "Sudhakar has deep hands-on expertise building production Retrieval-Augmented Generation (RAG) and Agentic AI workflows. He designs semantic search pipelines using high-dimensional vector embeddings (Google Gemini embedding models with 3072 dimensions, cosine similarity search), structured JSON Schema extraction, and autonomous agent loops. His AI stack includes LangGraph, CrewAI, Google Gemini, Anthropic Claude, Mistral AI (Codestral), Model Context Protocol (MCP), and local embeddings pipelines.",
+    link: "https://github.com/sudhakarkatam",
+    cluster: "AI & RAG Architecture",
+  },
+  {
+    id: "kb-sec-9",
+    sectionNum: 9,
+    title: "9. Full-Stack & Frontend Engineering Stack",
+    text: "Sudhakar's frontend expertise encompasses React 18, Next.js with App Router and Server-Side Rendering (SSR), TypeScript, and Vanilla CSS with Tailwind CSS and shadcn/ui. He has extensive mobile development experience using Capacitor to bundle web applications into native Android APKs. He designs resilient offline-first architectures utilizing browser IndexedDB, Service Workers, and client-side encryption.",
+    link: "https://github.com/sudhakarkatam",
+    cluster: "Frontend & Mobile",
+  },
+  {
+    id: "kb-sec-10",
+    sectionNum: 10,
+    title: "10. Backend Engineering, Databases & Cloud Systems",
+    text: "On the backend, Sudhakar engineers scalable microservices, REST APIs, and event-driven architectures using Python (FastAPI), Node.js, and Java with Spring Boot. His database proficiency includes PostgreSQL with pgvector for vector similarity search, Supabase, MySQL, and Redis for high-throughput in-memory caching. His infrastructure and DevOps toolkit includes Docker containerization, AWS cloud services, Git/GitHub CI/CD workflows, and Vercel edge deployment.",
+    link: "https://github.com/sudhakarkatam",
+    cluster: "Backend & Cloud",
+  },
+  {
+    id: "kb-sec-11",
+    sectionNum: 11,
+    title: "11. Computer Science Foundations & Security",
+    text: "Sudhakar holds a strong foundation in core Computer Science fundamentals: Data Structures, Algorithms, Object-Oriented Programming (OOP), System Design, and Web Application Security. He emphasizes client-side cryptography (Web Crypto API, AES-GCM, PBKDF2), zero-knowledge architectures, SQL query optimization, and secure API design.",
+    link: "https://github.com/sudhakarkatam",
+    cluster: "Security & CS Foundations",
+  },
+  {
+    id: "kb-sec-12",
+    sectionNum: 12,
+    title: "12. Contact Information & Online Presence",
+    text: "Sudhakar Reddy Katam can be reached directly via email at sudhakarkatam777@gmail.com. His public code repositories and open-source contributions are hosted on GitHub at https://github.com/sudhakarkatam. His professional career network and recommendations are on LinkedIn at https://linkedin.com/in/sudhakar-katam. His verified PDF resume is available for viewing and download via Google Drive. Sudhakar is open to discussions about full-time software engineering roles, technical co-founder opportunities, and contract projects.",
+    link: "mailto:sudhakarkatam777@gmail.com",
+    cluster: "Contact & Hiring",
+  },
+];
+
+// ── STEP 2: Grounded RAG Retrieval (Executed for PORTFOLIO_QUERY) ──
 export async function retrieveGroundedContext(query: string, topK: number = 4): Promise<GroundedChunk[]> {
-  // Option A: True Vector Cosine Similarity Search using 3072-dim embeddings
-  if (isGeminiConfigured() && Array.isArray(precomputedList) && precomputedList.length > 0) {
+  const cleanQuery = query.toLowerCase().trim();
+  const queryTokens = cleanQuery.split(/[\s,?.!]+/).filter((t) => t.length > 2);
+
+  // High-Precision Intent Detectors
+  const isLocationQuery = /where\s*(are\s*you|do\s*you|is\s*sudhakar|from|live|based|located|reside)|location|country|state|city|india|usa|united\s*states|place|telangana|hyderabad/i.test(cleanQuery);
+  const isIntroQuery = /who\s*(are\s*you|is\s*sudhakar)|tell\s*me\s*about\s*(you|yourself|sudhakar)|intro|introduce|background|bio|story|what\s*do\s*you\s*do/i.test(cleanQuery);
+  const isWorkStatusQuery = /are\s*you\s*(working|employed|free|available)|status|hire|job|role|contract|freelance|open\s*to/i.test(cleanQuery);
+  const isContactQuery = /contact|email|reach|hire|touch|call|message|linkedin|github|resume|cv/i.test(cleanQuery);
+  const isAiQuery = /ai|rag|agent|agentic|embedding|vector|llm|codestral|gemini|mistral|mcp/i.test(cleanQuery);
+  const isSecurityCryptoQuery = /crypto|encrypt|decrypt|droply|zero\s*knowledge|security|privacy/i.test(cleanQuery);
+  const isMobileTrackerQuery = /tracker|habit|offline|indexeddb|mobile|android|capacitor/i.test(cleanQuery);
+  const isCalculatorQuery = /calc|financial|investment|sip|swp|emi|loan|play\s*store/i.test(cleanQuery);
+  const isBackendQuery = /backend|api|server|database|postgres|sql|python|fastapi|java|spring|docker|aws/i.test(cleanQuery);
+  const isFrontendQuery = /frontend|ui|react|typescript|nextjs|tailwind|css|web/i.test(cleanQuery);
+
+  const scoredSections = KNOWLEDGE_SECTIONS.map((sec) => {
+    let score = 0;
+    const lowerText = sec.text.toLowerCase();
+    const lowerTitle = sec.title.toLowerCase();
+
+    // Contextual Intent Prioritization
+    if (sec.sectionNum === 1 && (isLocationQuery || isIntroQuery || isWorkStatusQuery)) score += 150;
+    if (sec.sectionNum === 2 && (isIntroQuery || isWorkStatusQuery)) score += 70;
+    if (sec.sectionNum === 3 && isSecurityCryptoQuery) score += 120;
+    if (sec.sectionNum === 4 && isMobileTrackerQuery) score += 120;
+    if (sec.sectionNum === 5 && isCalculatorQuery) score += 120;
+    if (sec.sectionNum === 8 && isAiQuery) score += 120;
+    if (sec.sectionNum === 9 && isFrontendQuery) score += 90;
+    if (sec.sectionNum === 10 && isBackendQuery) score += 90;
+    if (sec.sectionNum === 11 && isSecurityCryptoQuery) score += 80;
+    if (sec.sectionNum === 12 && isContactQuery) score += 150;
+
+    // Full text & token scoring
+    if (lowerText.includes(cleanQuery)) score += 50;
+    if (lowerTitle.includes(cleanQuery)) score += 60;
+
+    queryTokens.forEach((token) => {
+      if (lowerTitle.includes(token)) score += 25;
+      if (lowerText.includes(token)) score += 12;
+    });
+
+    return { sec, score };
+  });
+
+  let sortedSections: GroundedChunk[] = scoredSections
+    .sort((a, b) => b.score - a.score)
+    .filter((s) => s.score > 0)
+    .slice(0, topK)
+    .map((s) => ({
+      id: s.sec.id,
+      title: s.sec.title,
+      text: s.sec.text,
+      link: s.sec.link,
+      cluster: s.sec.cluster,
+    }));
+
+  // Enforce Section 1 at the top for any location or intro query
+  if (isLocationQuery || isIntroQuery) {
+    const sec1 = KNOWLEDGE_SECTIONS[0];
+    sortedSections = sortedSections.filter((s) => s.id !== sec1.id);
+    sortedSections.unshift({
+      id: sec1.id,
+      title: sec1.title,
+      text: sec1.text,
+      link: sec1.link,
+      cluster: sec1.cluster,
+    });
+  }
+
+  // If vector search is available and this is a deep technical query, augment with top technical node
+  if (isGeminiConfigured() && Array.isArray(precomputedList) && precomputedList.length > 0 && !isLocationQuery && !isIntroQuery) {
     try {
       const queryVector = await embedText(query);
       if (queryVector && queryVector.length > 0) {
-        const topMatches = searchByCosineSimilarity(queryVector, precomputedList, topK);
+        const topMatches = searchByCosineSimilarity(queryVector, precomputedList, 2);
         const nodeMap = new Map(RESUME_VECTOR_NODES.map((n) => [n.id, n]));
-        const retrieved: GroundedChunk[] = [];
-
         topMatches.forEach((m) => {
-          const matchedEntry = precomputedList.find((e) => e.id === m.id);
           const foundNode = nodeMap.get(m.id);
-
-          if (matchedEntry?.text) {
-            // It's a text chunk from portfolioKnowledge.txt
-            retrieved.push({
-              id: matchedEntry.id,
-              title: matchedEntry.title || "Knowledge Base",
-              text: matchedEntry.text,
-              cluster: "Verified Knowledge Base",
-            });
-          } else if (foundNode) {
-            // It's an interactive graph node
-            retrieved.push({
+          if (foundNode && !sortedSections.some((s) => s.id === foundNode.id)) {
+            sortedSections.push({
               id: foundNode.id,
               title: foundNode.title,
               text: `${foundNode.title}: ${foundNode.description}. Highlights: ${(foundNode.metricsOrHighlights || []).join("; ")}. Tech: ${(foundNode.codeOrTech || []).join(", ")}`,
@@ -228,56 +397,23 @@ export async function retrieveGroundedContext(query: string, topK: number = 4): 
             });
           }
         });
-
-        if (retrieved.length > 0) {
-          return retrieved;
-        }
       }
-    } catch (err) {
-      console.warn("Vector embedding retrieval error, falling back to dynamic scoring:", err);
+    } catch {
+      // Non-blocking fallback
     }
   }
 
-  // Option B: Dynamic Paragraph Scoring Fallback (Parsed from portfolioKnowledge.txt)
-  if (rawKnowledgeText && rawKnowledgeText.trim()) {
-    const paragraphs = rawKnowledgeText.split(/\n(?=##\s+)/g);
-    const cleanQuery = query.toLowerCase();
-    const queryTokens = cleanQuery.split(/\s+/).filter((t) => t.length > 2);
-
-    const scoredParagraphs = paragraphs.map((p, idx) => {
-      let score = 0;
-      const lowerP = p.toLowerCase();
-      if (lowerP.includes(cleanQuery)) score += 50;
-      queryTokens.forEach((t) => {
-        if (lowerP.includes(t)) score += 15;
-      });
-      const lines = p.trim().split("\n");
-      const title = lines[0].replace(/^#+\s*/, "").trim();
-      return { id: `kb-${idx}`, title, text: p.trim(), score };
-    });
-
-    const topPara = scoredParagraphs
-      .filter((sp) => sp.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, topK);
-
-    if (topPara.length > 0) {
-      return topPara.map((tp) => ({
-        id: tp.id,
-        title: tp.title,
-        text: tp.text,
-        cluster: "Portfolio Knowledge",
-      }));
-    }
+  if (sortedSections.length > 0) {
+    return sortedSections.slice(0, topK);
   }
 
-  // Option C: Graph Nodes scoring fallback
-  return RESUME_VECTOR_NODES.slice(0, topK).map((n) => ({
-    id: n.id,
-    title: n.title,
-    text: `${n.title}: ${n.description}`,
-    link: n.externalLink || n.githubLink,
-    cluster: n.clusterLabel,
+  // Fallback default chunks
+  return KNOWLEDGE_SECTIONS.slice(0, topK).map((s) => ({
+    id: s.id,
+    title: s.title,
+    text: s.text,
+    link: s.link,
+    cluster: s.cluster,
   }));
 }
 
@@ -300,7 +436,7 @@ export async function streamMistralResponse(
         const greetingPrompt = `You are ${candidateName}'s official AI Representative.
 The visitor just greeted you ("${query}").
 Respond warmly, naturally, and concisely in 1 to 2 sentences.
-Acknowledge their greeting naturally (e.g. "Hello! I'm doing well, thank you!"), introduce yourself as ${candidateName}'s AI representative, and invite them to explore their software engineering projects, technical stack, or get in touch.`;
+Acknowledge their greeting naturally, introduce yourself as ${candidateName}'s AI representative, and invite them to explore projects, technical stack, or get in touch.`;
 
         const res = await callMistralChat(apiKey, {
           model: "codestral-2508",
@@ -309,7 +445,7 @@ Acknowledge their greeting naturally (e.g. "Hello! I'm doing well, thank you!"),
             { role: "user", content: query },
           ],
           temperature: 0.6,
-          max_tokens: 150,
+          max_tokens: 120,
           stream: true,
         });
 
@@ -322,7 +458,7 @@ Acknowledge their greeting naturally (e.g. "Hello! I'm doing well, thank you!"),
       }
     }
 
-    const greetingText = `Hello! I am ${candidateName}'s AI portfolio representative. I can answer questions about their software engineering projects, technical architecture, current availability, or contact details. How can I help you explore today?`;
+    const greetingText = `Hello! I am ${candidateName}'s AI portfolio representative. How can I help you explore their projects, technical background, or current availability today?`;
     await simulateStream(greetingText, onChunk);
     return { text: greetingText, citations: [], intent: "GREETING" };
   }
@@ -359,13 +495,28 @@ Acknowledge their greeting naturally (e.g. "Hello! I'm doing well, thank you!"),
     return { text: fallbackAnswer, citations, intent: "PORTFOLIO_QUERY" };
   }
 
-  // Production Prompt: High-empathy persona with pronoun resolution and verified context
-  const systemPrompt = `You are the official AI Representative / Digital Avatar of ${candidateName}. Your role is to represent their professional profile, software engineering background, projects, architecture decisions, and current career status with utmost accuracy.
+  // Production Prompt: Ground truth identity, strict facts, and pronoun resolution
+  const systemPrompt = `You are the official AI Representative / Digital Avatar of ${candidateName}. Your role is to represent their professional profile, software engineering background, projects, architecture decisions, and current career status with 100% factual accuracy.
+
+CORE CANDIDATE FACTS & GROUND TRUTH (ALWAYS PRESERVE ACCURACY):
+1. CANDIDATE NAME: ${candidateName}
+2. LOCATION & RESIDENCE: Based in INDIA (Telangana / Hyderabad, India). Sudhakar currently resides, lives, and works in INDIA. He DOES NOT live in the United States or anywhere outside India. Under NO circumstances should you state or imply that he resides in the United States.
+3. CURRENT WORK STATUS: Actively exploring and open to full-time Software Engineering roles, contract engineering positions, and freelance opportunities globally (both remote work worldwide and on-site relocation).
+4. PHILOSOPHY: Developer who loves learning by building. Comfortable across the entire stack—web, mobile, backend, client-side cryptography, and Agentic AI.
+5. TOP 5 PRODUCTION PROJECTS:
+   - Droply: Ephemeral, zero-knowledge, end-to-end encrypted file sharing (Web Crypto API AES-GCM 256-bit, PBKDF2). Live on Netlify.
+   - Personal Tracker: Offline-first Android mobile app (React, TypeScript, Capacitor, IndexedDB) with habit tracking, streak preservation, zero server dependence.
+   - Financial Calculators: Live on Google Play Store (PWA + Capacitor Android app) with SIP, SWP, and Loan EMI calculators.
+   - PureValuePicks: Full-stack e-commerce storefront (React, Next.js, Supabase, PostgreSQL).
+   - Live Production Hub: Aggregated deployment command center and architecture showcase.
+6. CORE TECH STACK: React 18, Next.js, TypeScript, Node.js, Python (FastAPI), Java (Spring Boot), Supabase, PostgreSQL (pgvector), Docker, AWS, Agentic AI, RAG.
+7. CONTACT: Email: ${portfolioData.contact.email} | GitHub: ${portfolioData.contact.github || ""} | LinkedIn: ${portfolioData.contact.linkedin || ""}
 
 PERSONA & PRONOUN RESOLUTION RULES:
-1. You speak on behalf of ${candidateName}. When a visitor uses 2nd-person pronouns ("you", "your", "are you", "do you", "where do you", "what have you built"), they are inquiring about ${candidateName}.
-   - Example: If asked "are you working now?" or "what is your current status?", explain that ${candidateName} is an engineer actively exploring full-time software engineering roles, contract work, and freelance opportunities.
-   - Example: If asked "what do you build?" or "what is your stack?", answer using ${candidateName}'s projects and technical stack from the context.
+1. You speak on behalf of ${candidateName}. When a visitor uses 2nd-person pronouns ("you", "your", "are you", "do you", "where do you", "where are you from", "what have you built"), they are inquiring directly about ${candidateName}.
+   - Example: If asked "where are you from?" or "where do you live?", state clearly: "I am based in India (Telangana). I currently reside and work in India and am open to remote opportunities worldwide as well as on-site roles."
+   - Example: If asked "are you working now?" or "what is your status?", explain that you are an engineer actively exploring full-time software engineering roles, contract work, and freelance opportunities.
+   - Example: If asked "what do you build?" or "what is your stack?", answer using ${candidateName}'s actual projects and technical stack from the verified context.
 2. Never speak as a robotic computer program or backend server daemon (never say "I am an AI running on a server 24/7"). Speak naturally and professionally as ${candidateName}'s representative.
 3. Manage typos, colloquialisms, and incomplete phrases gracefully (e.g. "how are yo" -> "How are you", "drply" -> "Droply", "wrk" -> "work").
 
@@ -375,18 +526,13 @@ GROUNDING & FORMATTING RULES:
 3. Length: Keep answers concise and informative (2 to 4 well-structured sentences, or clean numbered points).
 4. Formatting: Write clean, readable text. Use standard numbered items or concise paragraphs. Do not output raw markdown tags or unformatted asterisks.
 5. Reference specific projects, architectures, performance metrics, and technologies directly extracted from the verified portfolio chunks above when relevant to the visitor's inquiry.
-6. If the context chunks do not contain the answer, politely state what is known instead of speculating.
+6. NO UNSOLICITED FOLLOW-UPS: Never include conversational follow-up questions, trailing suggestions, or closing filler at the end of your response (e.g. avoid phrases like "Let me know if you need more details!", "Feel free to ask if you want to explore more about Droply", "Would you like me to elaborate?", or "What else would you like to know?"). Provide the direct, informative answer and stop immediately.
 
 === VERIFIED PORTFOLIO KNOWLEDGE CONTEXT ===
 ${contextText}
 
 === VISITOR QUERY ===
-"${query}"
-
-Contact Details:
-Email: ${portfolioData.contact.email}
-GitHub: ${portfolioData.contact.github || ""}
-LinkedIn: ${portfolioData.contact.linkedin || ""}`;
+"${query}"`;
 
   const messages = [
     { role: "system", content: systemPrompt },
@@ -408,7 +554,7 @@ LinkedIn: ${portfolioData.contact.linkedin || ""}`;
     }
 
     const streamed = await readStream(response, onChunk);
-    return { text: streamed || "Thank you for asking! Let me know if you need more details.", citations, intent: "PORTFOLIO_QUERY" };
+    return { text: streamed || generateDataDrivenAnswer(query, retrievedChunks), citations, intent: "PORTFOLIO_QUERY" };
   } catch (err: any) {
     console.warn("Codestral stream failed, falling back to grounded response:", err);
     const fallbackAnswer = generateDataDrivenAnswer(query, retrievedChunks);
@@ -466,8 +612,18 @@ function generateDataDrivenAnswer(query: string, chunks: GroundedChunk[]): strin
   const clean = query.toLowerCase();
   const candidateName = portfolioData.name;
 
+  // Location / origin inquiries
+  if (/where\s*(are\s*you|do\s*you|is\s*sudhakar)\s*(from|live|based|located|reside)|location|country|city|based\s*in|reside|india|united\s*states|state/i.test(clean)) {
+    return `I am based in India (Telangana). I currently reside and work in India, and I am actively exploring full-time Software Engineering roles, contract engineering positions, and freelance opportunities globally (both remote and on-site relocation).`;
+  }
+
+  // Introduction / identity inquiries
+  if (/who\s*are\s*you|tell\s*me\s*about\s*(yourself|you|sudhakar)|introduce|what\s*do\s*you\s*do/i.test(clean)) {
+    return `I am ${candidateName}, a Full-Stack Software Engineer and AI Systems Developer based in India. I love learning by building end-to-end production systems across web, mobile, and Agentic AI. My key projects include Droply (encrypted file sharing), Personal Tracker (offline-first Android app), and Financial Calculators (published on Google Play Store).`;
+  }
+
   // Status / employment / availability inquiries
-  if (clean.includes("working now") || clean.includes("employed") || clean.includes("status") || clean.includes("available")) {
+  if (clean.includes("working now") || clean.includes("employed") || clean.includes("status") || clean.includes("available") || clean.includes("job")) {
     return `${candidateName} is an aspiring software engineer actively seeking full-time software engineering roles, contract engineering positions, and freelance opportunities. He is based in India and open to global remote and on-site positions.`;
   }
 
@@ -477,7 +633,7 @@ function generateDataDrivenAnswer(query: string, chunks: GroundedChunk[]): strin
   }
 
   if (chunks.length === 0) {
-    return `${candidateName} is a software engineer specializing in ${portfolioData.title}. Feel free to ask about specific projects, system architectures, or technical capabilities!`;
+    return `${candidateName} is a software engineer specializing in ${portfolioData.title}.`;
   }
 
   const primary = chunks[0];

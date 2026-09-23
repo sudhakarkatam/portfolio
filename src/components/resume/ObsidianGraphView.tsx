@@ -785,17 +785,13 @@ export const ObsidianGraphView: React.FC<ObsidianGraphViewProps> = ({
           className="w-full h-full cursor-grab active:cursor-grabbing block touch-none"
         />
 
-        {/* Top Left: Graph Title & Constellation Badge */}
-        <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2 pointer-events-none">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 backdrop-blur-md border border-purple-500/30 text-xs font-mono text-zinc-300 shadow-lg">
-            <Share2 size={13} className="text-purple-400" />
-            <span className="font-bold text-white tracking-wider">NEURAL KNOWLEDGE GRAPH</span>
-            <span className="text-zinc-600">|</span>
-            <span className="text-purple-300 font-semibold">{RESUME_VECTOR_NODES.length} Nodes</span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-1.5 text-[11px] font-mono text-zinc-400 bg-zinc-900/70 px-3 py-1 rounded-full border border-zinc-800 backdrop-blur-sm">
-            <span>Hover to isolate synapses • Click to open details</span>
+        {/* Top Left: Minimal Space Badge */}
+        <div className="absolute top-3.5 left-4 flex items-center gap-2 pointer-events-none">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/80 backdrop-blur-md border border-zinc-800 text-xs font-mono text-zinc-300 shadow-md">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+            <span className="font-semibold text-white">Neural Vector Space</span>
+            <span className="text-zinc-600">/</span>
+            <span className="text-zinc-400">{RESUME_VECTOR_NODES.length} Nodes</span>
           </div>
         </div>
 

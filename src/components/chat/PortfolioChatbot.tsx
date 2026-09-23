@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  MessageSquare,
+  Bot,
   X,
   Send,
   Mic,
   MicOff,
-  Sparkles,
-  Bot,
   Minimize2,
   ExternalLink,
   Bookmark,
@@ -285,13 +283,16 @@ export const PortfolioChatbot: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-zinc-950 text-white border border-zinc-700 shadow-2xl hover:border-purple-500 transition-all group"
-          title="Open AI Portfolio Chatbot"
+          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-zinc-950 text-white border border-zinc-700 shadow-2xl hover:border-purple-500 transition-all group overflow-hidden"
+          title="Open Sudhakar AI Assistant"
         >
           {isOpen ? (
             <X size={22} className="transition-transform group-hover:rotate-90 duration-200" />
           ) : (
-            <MessageSquare size={22} className="text-white" />
+            <div className="relative w-full h-full flex items-center justify-center">
+              <Bot size={26} className="text-purple-400 group-hover:scale-110 transition-transform duration-200" />
+              <span className="absolute bottom-2 right-2 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-zinc-950 shadow-sm" />
+            </div>
           )}
 
           {/* Unread Indicator Badge */}
@@ -319,19 +320,20 @@ export const PortfolioChatbot: React.FC = () => {
             {/* Header Bar */}
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-900/60 backdrop-blur-md">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                  <Sparkles size={16} />
+                <div className="relative">
+                  <img
+                    src="/profile-pic.webp"
+                    alt="Sudhakar AI"
+                    className="w-9 h-9 rounded-full object-cover border border-purple-500/30 shadow-sm"
+                    width={36}
+                    height={36}
+                  />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-zinc-900" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="font-bold text-sm text-zinc-950 dark:text-white leading-tight">
-                      Sudhakar AI
-                    </h3>
-                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
-                  </div>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
-                    Trained on Portfolio • Codestral RAG
-                  </p>
+                  <h3 className="font-bold text-sm text-zinc-950 dark:text-white leading-tight">
+                    Sudhakar AI
+                  </h3>
                 </div>
               </div>
 
@@ -354,9 +356,15 @@ export const PortfolioChatbot: React.FC = () => {
                   className={`flex gap-2.5 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                 >
                   {msg.sender === "assistant" && (
-                    <div className="w-7 h-7 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 mt-0.5 border border-purple-500/20">
-                      <Bot size={14} />
-                    </div>
+                    <img
+                      src="/profile-pic.webp"
+                      alt="Sudhakar AI"
+                      className="w-7 h-7 rounded-full object-cover border border-purple-500/30 shrink-0 mt-0.5 shadow-sm"
+                      width={28}
+                      height={28}
+                      loading="eager"
+                      decoding="async"
+                    />
                   )}
 
                   <div className={`space-y-1.5 max-w-[85%] ${msg.sender === "user" ? "items-end" : "items-start"}`}>
@@ -372,7 +380,7 @@ export const PortfolioChatbot: React.FC = () => {
                       ) : (
                         <span className="flex items-center gap-1.5 text-zinc-400 animate-pulse text-xs font-mono">
                           <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping" />
-                          <span>Thinking & retrieving portfolio context...</span>
+                          <span>Thinking...</span>
                         </span>
                       )}
                     </div>
@@ -478,12 +486,11 @@ export const PortfolioChatbot: React.FC = () => {
               </div>
 
               {/* Footer Attribution */}
-              <div className="flex items-center justify-between px-1 pt-2 text-[10px] font-mono text-zinc-400 dark:text-zinc-500">
+              <div className="flex items-center justify-center px-1 pt-2 text-[10px] font-mono text-zinc-400 dark:text-zinc-500">
                 <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   <span>Codestral • Mistral AI</span>
                 </span>
-                <span>Production RAG Grounded</span>
               </div>
             </div>
           </motion.div>
