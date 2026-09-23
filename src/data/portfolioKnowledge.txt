@@ -1,0 +1,41 @@
+# SUDHAKAR REDDY KATAM — PORTFOLIO KNOWLEDGE BASE
+
+## 1. Professional Identity & Current Work Status
+Sudhakar Reddy Katam is a versatile Full-Stack Software Engineer and AI Systems Developer. He specializes in building production web applications, mobile platforms, and Agentic AI/RAG architectures. He is currently actively exploring and open to full-time Software Engineering roles, contract engineering positions, and freelance opportunities globally. He is based in India and fully equipped for remote and on-site engineering roles.
+
+## 2. Core Philosophy & Engineering Approach
+Sudhakar is a developer who learns by building production systems end-to-end. He is comfortable across the entire stack—from high-performance browser interfaces and cryptography to distributed backend systems, vector databases, and autonomous AI agents. He is deeply interested in both software engineering and hardware systems, focusing on clean code, zero-knowledge security, offline resilience, and fast user experiences.
+
+## 3. Production Project: Droply (End-to-End Encrypted File Sharing)
+Droply is an ephemeral, zero-knowledge, end-to-end encrypted file sharing and real-time messaging platform. It utilizes the browser Web Crypto API (AES-GCM 256-bit with PBKDF2 key derivation) so encryption and decryption happen strictly on the client side. Plaintext files and decryption keys never reach the server. Files are stored in zero-knowledge encrypted buckets with strict Time-To-Live (TTL) room expiration, auto-destruction upon download, and zero mandatory user registration. Droply is deployed and live on Netlify.
+
+## 4. Production Project: Personal Tracker Application
+Personal Tracker is an offline-first mobile application built for Android using React, TypeScript, Capacitor, and IndexedDB with a modern shadcn/ui interface. It provides comprehensive habit formation tracking, daily task management with subtasks, markdown notes and journaling, expense tracking, and wellness metrics. The application features a skip-day streak preservation system, interactive progress visualization charts, and runs completely offline with zero server dependency for total user privacy.
+
+## 5. Production Project: Financial Calculators Suite
+Financial Calculators is a mobile-first Progressive Web Application and Android application published on the Google Play Store. Built with React, TypeScript, and Capacitor, it provides instant precision calculators for investments and loans, including SIP (Systematic Investment Plan), SWP (Systematic Withdrawal Plan), Compound Interest, and Loan EMI calculators. It features responsive visualization charts, fast native performance, and edge deployment.
+
+## 6. Production Project: PureValuePicks E-Commerce Store
+PureValuePicks is a responsive full-stack e-commerce storefront engineered with React, Next.js, and TypeScript. It features a complete product catalog, shopping cart state management, checkout workflows, and user authentication with Supabase and PostgreSQL. It delivers high performance, responsive layout design, and smooth checkout transitions.
+
+## 7. Production Project: Live Production Hub
+The Live Production Hub serves as a unified command center aggregating Sudhakar's deployed web applications, mobile builds, and open-source tools. Built with React and TypeScript, it displays live deployment health checks, technical documentation, architectural breakdowns, and direct links to live demonstrations and GitHub source repositories.
+
+## 8. AI & Agentic RAG Architecture Expertise
+Sudhakar has deep hands-on expertise building production Retrieval-Augmented Generation (RAG) and Agentic AI workflows. He designs semantic search pipelines using high-dimensional vector embeddings (Google Gemini embedding models with 3072 dimensions, cosine similarity search), structured JSON Schema extraction, and autonomous agent loops. His AI stack includes LangGraph, CrewAI, Google Gemini, Anthropic Claude, Mistral AI (Codestral), Model Context Protocol (MCP), and local embeddings pipelines.
+
+## 9. Full-Stack & Frontend Engineering Stack
+Sudhakar's frontend expertise encompasses React 18, Next.js with App Router and Server-Side Rendering (SSR), TypeScript, and Vanilla CSS with Tailwind CSS and shadcn/ui. He has extensive mobile development experience using Capacitor to bundle web applications into native Android APKs. He designs resilient offline-first architectures utilizing browser IndexedDB, Service Workers, and client-side encryption.
+
+## 10. Backend Engineering, Databases & Cloud Systems
+On the backend, Sudhakar engineers scalable microservices, REST APIs, and event-driven architectures using Python (FastAPI), Node.js, and Java with Spring Boot. His database proficiency includes PostgreSQL with pgvector for vector similarity search, Supabase, MySQL, and Redis for high-throughput in-memory caching. His infrastructure and DevOps toolkit includes Docker containerization, AWS cloud services, Git/GitHub CI/CD workflows, and Vercel edge deployment.
+
+## 11. Computer Science Foundations & Security
+Sudhakar holds a strong foundation in core Computer Science fundamentals: Data Structures, Algorithms, Object-Oriented Programming (OOP), System Design, and Web Application Security. He emphasizes client-side cryptography (Web Crypto API, AES-GCM, PBKDF2), zero-knowledge architectures, SQL query optimization, and secure API design.
+
+## 12. Contact Information & Online Presence
+Sudhakar Reddy Katam can be reached directly via email at sudhakarkatam777@gmail.com.
+His public code repositories and open-source contributions are hosted on GitHub at https://github.com/sudhakarkatam.
+His professional career network and recommendations are on LinkedIn at https://linkedin.com/in/sudhakar-katam.
+His verified PDF resume is available for viewing and download via Google Drive.
+Sudhakar is open to discussions about full-time software engineering roles, technical co-founder opportunities, and contract projects.

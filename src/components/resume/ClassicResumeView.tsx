@@ -96,7 +96,7 @@ ${projects
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 transition-colors"
             >
               <Sparkles size={14} className="text-purple-500" />
-              <span>Explore in 3D Space</span>
+              <span>Explore Knowledge Graph</span>
             </button>
           )}
 

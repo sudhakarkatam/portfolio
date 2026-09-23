@@ -1,324 +1,359 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageLayout } from "@/components/PageLayout";
-import { VectorGraph3D } from "@/components/resume/VectorGraph3D";
-import { RAGSearchSimulator } from "@/components/resume/RAGSearchSimulator";
-import { ClassicResumeView } from "@/components/resume/ClassicResumeView";
-import { VectorNode, RESUME_VECTOR_NODES } from "@/data/resumeVectorData";
+import { ObsidianGraphView } from "@/components/resume/ObsidianGraphView";
+import {
+  VectorNode,
+  RESUME_VECTOR_NODES,
+  VECTOR_CLUSTERS,
+  RAG_PRESET_QUERIES,
+  RAGPresetQuery,
+} from "@/data/resumeVectorData";
 import { portfolioData } from "@/data/portfolioData";
 import {
-  Sparkles,
-  FileText,
-  Boxes,
-  Download,
+  Search,
   X,
+  FileDown,
   ExternalLink,
-  Layers,
+  Sparkles,
+  Bookmark,
+  CheckCircle2,
   ArrowRight,
-  Info,
+  Share2,
+  Compass,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export const ResumePage: React.FC = () => {
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState<"3d_vector" | "classic">("3d_vector");
-  const [selectedNode, setSelectedNode] = useState<VectorNode | null>(null);
-  const [highlightedNodeIds, setHighlightedNodeIds] = useState<string[]>([]);
+
+  // Search & Node selection state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedNode, setSelectedNode] = useState<VectorNode | null>(RESUME_VECTOR_NODES[0]);
+  const [activePreset, setActivePreset] = useState<RAGPresetQuery | null>(null);
   const [activeClusterFilter, setActiveClusterFilter] = useState<string | null>(null);
 
-  const handleNavigateNavbar = useCallback((id: string) => {
-    if (id === "projects") {
-      navigate("/projects");
-    } else if (id === "contact") {
-      navigate("/#contact");
-    } else {
-      navigate("/");
-    }
-  }, [navigate]);
-
-  const handleRAGResultsChange = useCallback((matchedNodeIds: string[]) => {
-    setHighlightedNodeIds((prev) => {
-      if (prev.length === matchedNodeIds.length && prev.every((id, i) => id === matchedNodeIds[i])) {
-        return prev;
+  const handleNavigateNavbar = useCallback(
+    (id: string) => {
+      if (id === "projects") {
+        navigate("/projects");
+      } else if (id === "contact") {
+        navigate("/#contact");
+      } else {
+        navigate("/");
       }
-      return matchedNodeIds;
-    });
-  }, []);
+    },
+    [navigate]
+  );
 
-  const handleSelectNeighbor = useCallback((neighborId: string) => {
-    const node = RESUME_VECTOR_NODES.find((n) => n.id === neighborId);
-    if (node) setSelectedNode(node);
-  }, []);
+  // Compute matched node IDs based on search or active preset
+  const highlightedNodeIds = useMemo(() => {
+    if (activePreset) {
+      return activePreset.relevantNodeIds;
+    }
 
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+
+    return RESUME_VECTOR_NODES.filter((node) => {
+      const matchLabel = node.label.toLowerCase().includes(q);
+      const matchTitle = node.title.toLowerCase().includes(q);
+      const matchDesc = node.description.toLowerCase().includes(q);
+      const matchTech = (node.codeOrTech || []).some((t) => t.toLowerCase().includes(q));
+      const matchTags = (node.semanticTags || []).some((t) => t.toLowerCase().includes(q));
+      return matchLabel || matchTitle || matchDesc || matchTech || matchTags;
+    }).map((n) => n.id);
+  }, [searchQuery, activePreset]);
+
+  // When search matches nodes, automatically pick the top match if no node is explicitly selected
   const handleSelectNode = useCallback((node: VectorNode | null) => {
     setSelectedNode(node);
+    if (node) {
+      setActivePreset(null);
+    }
   }, []);
+
+  const handleSelectPreset = (preset: RAGPresetQuery) => {
+    if (activePreset?.id === preset.id) {
+      setActivePreset(null);
+      setSearchQuery("");
+      return;
+    }
+    setActivePreset(preset);
+    setSearchQuery(preset.query);
+    const firstMatched = RESUME_VECTOR_NODES.find((n) => preset.relevantNodeIds.includes(n.id));
+    if (firstMatched) {
+      setSelectedNode(firstMatched);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setActivePreset(null);
+  };
 
   return (
     <PageLayout activeSection="resume" onNavigate={handleNavigateNavbar}>
-      {/* Centered container aligned to max 900px for comfortable 3D + RAG viewing, full width on print */}
-      <main className="relative z-10 mx-auto max-w-[900px] px-4 sm:px-6 pt-8 sm:pt-28 pb-28 sm:pb-24 space-y-8 print:p-0 print:m-0 print:max-w-none print:space-y-0">
-        
-        {/* Header Row (Hidden on print) */}
-        <div className="space-y-4 pt-2 print:hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="text-xs font-mono font-semibold tracking-wider text-purple-600 dark:text-purple-400 uppercase flex items-center gap-2">
-                <Sparkles size={13} />
-                <span>AI KNOWLEDGE GRAPH & RESUME</span>
+      <main className="w-full pt-16 sm:pt-20 px-3 sm:px-6 pb-4 min-h-[calc(100vh)] flex flex-col select-text">
+        <div className="w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+          
+          {/* ── LEFT PANE: Minimal Search, Presets & Selected Node Details (4.5 cols) ── */}
+          <div className="lg:col-span-5 xl:col-span-4 flex flex-col h-full bg-white dark:bg-[#09090e] border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl p-4 sm:p-5 shadow-xl backdrop-blur-xl overflow-hidden">
+            
+            {/* Header: Candidate Info & PDF Download */}
+            <div className="flex items-center justify-between pb-3.5 border-b border-zinc-100 dark:border-zinc-800/80 shrink-0">
+              <div className="space-y-0.5">
+                <h1 className="text-base sm:text-lg font-black tracking-tight text-zinc-950 dark:text-white">
+                  {portfolioData.name}
+                </h1>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+                  Neural Vector Graph • Gemini RAG
+                </p>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
-                Interactive Resume
-              </h1>
-            </div>
-
-            {/* View Mode Switcher Pill */}
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shrink-0 self-start sm:self-auto">
-              <button
-                onClick={() => setViewMode("3d_vector")}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  viewMode === "3d_vector"
-                    ? "bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-                }`}
-              >
-                <Boxes size={14} className="text-purple-500" />
-                <span>3D Vector Graph</span>
-              </button>
-
-              <button
-                onClick={() => setViewMode("classic")}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  viewMode === "classic"
-                    ? "bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-                }`}
-              >
-                <FileText size={14} className="text-emerald-500" />
-                <span>Classic ATS</span>
-              </button>
 
               {portfolioData.contact.resume && (
                 <a
                   href={portfolioData.contact.resume}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-1.5 rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 transition-colors"
-                  title="Download Raw PDF"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-mono font-bold transition-all shadow-sm shrink-0"
+                  title="Download Verified PDF Resume"
                 >
-                  <Download size={15} />
+                  <FileDown size={13} />
+                  <span>PDF Resume</span>
                 </a>
+              )}
+            </div>
+
+            {/* Interactive Search Bar */}
+            <div className="pt-3 pb-2 shrink-0 space-y-2">
+              <div className="relative flex items-center bg-zinc-100/80 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-3 py-2 transition-all focus-within:border-purple-500/70 focus-within:ring-1 focus-within:ring-purple-500/20">
+                <Search size={14} className="text-zinc-400 shrink-0 mr-2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (activePreset) setActivePreset(null);
+                  }}
+                  placeholder="Search skills, architecture, projects..."
+                  className="flex-1 bg-transparent text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 outline-none font-sans"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={handleClearSearch}
+                    className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-white transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+
+              {/* Quick Preset Query Pills */}
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                {RAG_PRESET_QUERIES.map((preset) => {
+                  const isActive = activePreset?.id === preset.id;
+                  return (
+                    <button
+                      key={preset.id}
+                      onClick={() => handleSelectPreset(preset)}
+                      className={`text-[11px] font-mono px-2.5 py-1 rounded-lg border transition-all ${
+                        isActive
+                          ? "bg-purple-600 text-white border-purple-500 font-bold shadow-sm"
+                          : "bg-zinc-100/70 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700"
+                      }`}
+                    >
+                      {preset.id === "rag_ai" && "Agentic RAG"}
+                      {preset.id === "crypto_droply" && "Droply Security"}
+                      {preset.id === "fullstack_mobile" && "Mobile Apps"}
+                      {preset.id === "backend_db" && "Backend & DBs"}
+                      {preset.id === "contact_links" && "Contact Info"}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Active Preset Answer Banner (if preset is selected) */}
+            {activePreset && (
+              <div className="my-2 p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed shrink-0">
+                <span className="font-mono text-[10px] uppercase font-bold text-purple-600 dark:text-purple-400 block mb-1">
+                  Synthesized Answer:
+                </span>
+                {activePreset.summaryAnswer}
+              </div>
+            )}
+
+            {/* Scrollable Node Inspector / Details Body */}
+            <div className="flex-1 overflow-y-auto pr-1 space-y-4 pt-1 font-sans text-left">
+              {selectedNode ? (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={selectedNode.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.15 }}
+                    className="space-y-4"
+                  >
+                    {/* Domain & Title */}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: selectedNode.color }}
+                        />
+                        <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-purple-600 dark:text-purple-400">
+                          {selectedNode.clusterLabel}
+                        </span>
+                      </div>
+                      <h2 className="text-xl font-bold tracking-tight text-zinc-950 dark:text-white">
+                        {selectedNode.title}
+                      </h2>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+                        {selectedNode.subtitle}
+                      </p>
+                    </div>
+
+                    {/* Overview */}
+                    <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                      {selectedNode.description}
+                    </p>
+
+                    {/* Key Highlights / Metrics */}
+                    {selectedNode.metricsOrHighlights && selectedNode.metricsOrHighlights.length > 0 && (
+                      <div className="space-y-2 bg-zinc-50 dark:bg-zinc-900/60 p-3.5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-bold block">
+                          Key Capabilities:
+                        </span>
+                        <ul className="space-y-1.5 text-xs text-zinc-700 dark:text-zinc-300">
+                          {selectedNode.metricsOrHighlights.map((item, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-purple-500 font-bold shrink-0">•</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Architectural Learnings (if project) */}
+                    {selectedNode.featuresOrLearnings && selectedNode.featuresOrLearnings.length > 0 && (
+                      <div className="space-y-2 bg-purple-500/5 p-3.5 rounded-2xl border border-purple-500/15">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold block">
+                          Architecture & Learnings:
+                        </span>
+                        <ul className="space-y-1.5 text-xs text-zinc-700 dark:text-zinc-300">
+                          {selectedNode.featuresOrLearnings.map((item, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <CheckCircle2 size={13} className="text-purple-500 shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Tech Stack Pills */}
+                    {selectedNode.codeOrTech && selectedNode.codeOrTech.length > 0 && (
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-semibold block">
+                          Technologies:
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {selectedNode.codeOrTech.map((tech, idx) => (
+                            <span
+                              key={idx}
+                              className="text-[11px] font-mono px-2.5 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300"
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Connected Synaptic Nodes */}
+                    {selectedNode.connections && selectedNode.connections.length > 0 && (
+                      <div className="space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-semibold block">
+                          Connected Synapses ({selectedNode.connections.length}):
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {selectedNode.connections.map((connId) => {
+                            const neighbor = RESUME_VECTOR_NODES.find((n) => n.id === connId);
+                            if (!neighbor) return null;
+                            return (
+                              <button
+                                key={connId}
+                                onClick={() => handleSelectNode(neighbor)}
+                                className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/20 transition-colors"
+                              >
+                                <span
+                                  className="w-1.5 h-1.5 rounded-full"
+                                  style={{ backgroundColor: neighbor.color }}
+                                />
+                                <span>{neighbor.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Live Demos & GitHub Links */}
+                    {(selectedNode.externalLink || selectedNode.githubLink) && (
+                      <div className="flex items-center gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                        {selectedNode.externalLink && (
+                          <a
+                            href={selectedNode.externalLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-colors shadow-sm"
+                          >
+                            <span>Live Demo</span>
+                            <ExternalLink size={12} />
+                          </a>
+                        )}
+                        {selectedNode.githubLink && (
+                          <a
+                            href={selectedNode.githubLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white text-xs font-bold transition-colors border border-zinc-200 dark:border-zinc-700"
+                          >
+                            <span>GitHub Code</span>
+                            <ExternalLink size={12} />
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3 text-zinc-400">
+                  <Compass size={32} className="text-purple-500/50" />
+                  <p className="text-xs font-mono">
+                    Click any node on the graph to inspect technical capabilities, or select a preset above.
+                  </p>
+                </div>
               )}
             </div>
           </div>
 
-          <p className="text-zinc-600 dark:text-zinc-400 text-xs sm:text-sm leading-relaxed max-w-2xl">
-            {viewMode === "3d_vector"
-              ? "Explore Sudhakar's experience, skills, and projects mapped into 3D vector embedding space. Use the RAG query simulator below to compute cosine similarity in real time."
-              : "Clean, ATS-friendly resume breakdown with direct download and print capabilities."}
-          </p>
-        </div>
-
-        {/* ── View 1: 3D Vector Space & RAG Simulator ── */}
-        {viewMode === "3d_vector" ? (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-6"
-          >
-            {/* 3D Vector Space Canvas */}
-            <VectorGraph3D
+          {/* ── RIGHT PANE: Full-Height Interactive Neural Knowledge Graph (7.5 cols) ── */}
+          <div className="lg:col-span-7 xl:col-span-8 flex flex-col h-full min-h-[520px] rounded-3xl overflow-hidden shadow-2xl relative">
+            <ObsidianGraphView
               selectedNode={selectedNode}
               onSelectNode={handleSelectNode}
               highlightedNodeIds={highlightedNodeIds}
-              activeClusterFilter={activeClusterFilter || undefined}
+              activeClusterFilter={activeClusterFilter}
               onSelectCluster={setActiveClusterFilter}
             />
-
-            {/* RAG Search & Similarity Inspector */}
-            <RAGSearchSimulator
-              onResultsChange={handleRAGResultsChange}
-              onSelectNode={handleSelectNode}
-            />
-          </motion.div>
-        ) : (
-          /* ── View 2: Classic ATS Resume ── */
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <ClassicResumeView
-              onExploreIn3D={(nodeId) => {
-                setViewMode("3d_vector");
-                if (nodeId) handleSelectNeighbor(nodeId);
-              }}
-            />
-          </motion.div>
-        )}
-
-      </main>
-
-      {/* ── Slide-Over Modal / Drawer for Selected Vector Node ── */}
-      <AnimatePresence>
-        {selectedNode && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.94, y: 16 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.94, y: 16 }}
-              transition={{ duration: 0.2 }}
-              className="relative w-full max-w-lg bg-white dark:bg-[#0f0f14] border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 text-left max-h-[85vh] overflow-y-auto"
-            >
-              {/* Close Button */}
-              <button
-                onClick={() => setSelectedNode(null)}
-                className="absolute top-5 right-5 p-2 rounded-full text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                title="Close"
-              >
-                <X size={16} />
-              </button>
-
-              {/* Header Info */}
-              <div className="space-y-1.5 pr-8">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: selectedNode.color }}
-                  />
-                  <span className="text-[10px] font-mono font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase">
-                    {selectedNode.clusterLabel}
-                  </span>
-                  <span className="text-[10px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-800">
-                    vector ({selectedNode.x}, {selectedNode.y}, {selectedNode.z})
-                  </span>
-                </div>
-
-                <h3 className="text-xl sm:text-2xl font-bold text-zinc-950 dark:text-white tracking-tight">
-                  {selectedNode.title}
-                </h3>
-                <p className="text-xs font-semibold text-purple-600 dark:text-purple-400">
-                  {selectedNode.subtitle}
-                </p>
-              </div>
-
-              {/* Description */}
-              <p className="text-xs sm:text-sm text-zinc-650 dark:text-zinc-300 leading-relaxed">
-                {selectedNode.description}
-              </p>
-
-              {/* Key Highlights */}
-              {selectedNode.metricsOrHighlights && selectedNode.metricsOrHighlights.length > 0 && (
-                <div className="space-y-2 bg-zinc-50 dark:bg-zinc-900/60 p-3.5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-bold block">
-                    Key Highlights & Capabilities:
-                  </span>
-                  <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300">
-                    {selectedNode.metricsOrHighlights.map((highlight, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-purple-500 font-bold">•</span>
-                        <span>{highlight}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Features or Learnings if project */}
-              {selectedNode.featuresOrLearnings && selectedNode.featuresOrLearnings.length > 0 && (
-                <div className="space-y-2 bg-purple-500/5 p-3.5 rounded-2xl border border-purple-500/20">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold block">
-                    Features & Engineering Architecture:
-                  </span>
-                  <ul className="space-y-1.5 text-xs text-zinc-700 dark:text-zinc-300">
-                    {selectedNode.featuresOrLearnings.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-purple-500 font-bold shrink-0 mt-0.5">✓</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Tech Stack Pills */}
-              {selectedNode.codeOrTech && selectedNode.codeOrTech.length > 0 && (
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                    Stack & Concepts:
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {selectedNode.codeOrTech.map((tech, idx) => (
-                      <span
-                        key={idx}
-                        className="text-[11px] font-mono font-medium px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Connected Semantic Neighbors in Vector Space */}
-              {selectedNode.connections && selectedNode.connections.length > 0 && (
-                <div className="space-y-2 pt-1 border-t border-zinc-100 dark:border-zinc-800">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                    Connected Embedding Neighbors:
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {selectedNode.connections.map((connId) => {
-                      const neighbor = RESUME_VECTOR_NODES.find((n) => n.id === connId);
-                      if (!neighbor) return null;
-                      return (
-                        <button
-                          key={connId}
-                          onClick={() => handleSelectNeighbor(connId)}
-                          className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 transition-colors"
-                        >
-                          <span
-                            className="w-1.5 h-1.5 rounded-full"
-                            style={{ backgroundColor: neighbor.color }}
-                          />
-                          <span>{neighbor.label}</span>
-                          <ArrowRight size={10} />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons (GitHub & Live Links) */}
-              <div className="flex flex-wrap items-center gap-2 pt-2">
-                {selectedNode.githubLink && (
-                  <a
-                    href={selectedNode.githubLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800/80 text-zinc-900 dark:text-white font-bold text-xs hover:scale-[1.01] transition-transform"
-                  >
-                    <span>View GitHub Source</span>
-                    <ExternalLink size={12} />
-                  </a>
-                )}
-                {selectedNode.externalLink && (
-                  <a
-                    href={selectedNode.externalLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-zinc-950 dark:bg-white text-white dark:text-black font-bold text-xs hover:scale-[1.01] transition-transform shadow-md"
-                  >
-                    <span>Live Deployment</span>
-                    <ExternalLink size={12} />
-                  </a>
-                )}
-              </div>
-            </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+
+        </div>
+      </main>
     </PageLayout>
   );
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import { VectorNode } from "@/data/resumeVectorData";
-import { TensorFlowProjectorView } from "./TensorFlowProjectorView";
+import { ObsidianGraphView } from "./ObsidianGraphView";
 
 interface VectorGraph3DProps {
   selectedNode: VectorNode | null;
@@ -18,7 +18,7 @@ export const VectorGraph3D: React.FC<VectorGraph3DProps> = ({
   onSelectCluster,
 }) => {
   return (
-    <TensorFlowProjectorView
+    <ObsidianGraphView
       selectedNode={selectedNode}
       onSelectNode={onSelectNode}
       highlightedNodeIds={highlightedNodeIds}

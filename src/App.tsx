@@ -9,6 +9,8 @@ const ProjectsPage = lazy(() => import("./pages/ProjectsPage"));
 const ResumePage = lazy(() => import("./pages/ResumePage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
+import { PortfolioChatbot } from "./components/chat/PortfolioChatbot";
+
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
@@ -25,6 +27,7 @@ export const App: React.FC = () => {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
+      <PortfolioChatbot />
       <Analytics />
       <SpeedInsights />
     </BrowserRouter>

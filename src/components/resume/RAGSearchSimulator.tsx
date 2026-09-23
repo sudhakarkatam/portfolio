@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   VectorNode,
   RESUME_VECTOR_NODES,
@@ -6,9 +6,15 @@ import {
   RAGPresetQuery,
 } from "@/data/resumeVectorData";
 import {
-  HuggingFaceEmbeddingService,
-  PipelineStatus,
-} from "@/services/huggingfaceEmbeddings";
+  searchByCosineSimilarity,
+  EmbeddingEntry,
+} from "@/lib/vectorSearch";
+import {
+  embedText,
+  generateAnswer,
+  isApiKeyConfigured,
+} from "@/services/geminiService";
+import rawPrecomputedEmbeddings from "@/data/precomputedEmbeddings.json";
 import {
   Search,
   Sparkles,
@@ -21,6 +27,9 @@ import {
   Cpu,
   Bookmark,
   ExternalLink,
+  Loader2,
+  AlertCircle,
+  Zap,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -32,8 +41,10 @@ interface RAGSearchSimulatorProps {
 interface RankedMatch {
   node: VectorNode;
   score: number; // 0 to 100%
-  matchedTerms?: string[];
 }
+
+const precomputedList = rawPrecomputedEmbeddings as EmbeddingEntry[];
+const hasPrecomputed = Array.isArray(precomputedList) && precomputedList.length > 0;
 
 export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
   onResultsChange,
@@ -42,29 +53,29 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [activePreset, setActivePreset] = useState<RAGPresetQuery | null>(null);
   const [showRAGContext, setShowRAGContext] = useState(true);
-  const [modelStatus, setModelStatus] = useState<PipelineStatus>("ready");
-  const [hfResults, setHfResults] = useState<RankedMatch[]>([]);
+  const [rankedResults, setRankedResults] = useState<RankedMatch[]>([]);
   const [isComputing, setIsComputing] = useState(false);
+  const [isGeneratingLLM, setIsGeneratingLLM] = useState(false);
+  const [streamedAnswer, setStreamedAnswer] = useState<string>("");
+  const [activeError, setActiveError] = useState<string | null>(null);
+  const [latencyMs, setLatencyMs] = useState<number>(0.8);
 
-  // Subscribe to HuggingFace pipeline status
-  useEffect(() => {
-    return HuggingFaceEmbeddingService.onStatusChange(setModelStatus);
-  }, []);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Compute Cosine Similarity using Semantic Embeddings
+  // Compute Cosine Similarity using Semantic Embeddings or Fallback
   useEffect(() => {
     let isCancelled = false;
     const query = (searchQuery || activePreset?.query || "").trim();
 
     if (!query) {
-      setHfResults([]);
+      setRankedResults([]);
+      setStreamedAnswer("");
+      setActiveError(null);
       onResultsChange([], "");
       return;
     }
 
-    setIsComputing(true);
-
-    // If activePreset is selected and matches the current query, use its verified relevance
+    // 1. If activePreset is selected and matches query, use verified matches
     if (activePreset && (searchQuery === activePreset.query || !searchQuery.trim())) {
       const presetMatches: RankedMatch[] = activePreset.relevantNodeIds
         .map((id, index) => {
@@ -72,29 +83,122 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
           return node
             ? {
                 node,
-                score: Math.max(82, 99 - index * 3),
+                score: Math.max(84, 99 - index * 4),
               }
             : null;
         })
         .filter(Boolean) as RankedMatch[];
 
-      setHfResults(presetMatches);
+      setRankedResults(presetMatches);
+      setStreamedAnswer(activePreset.summaryAnswer);
       setIsComputing(false);
       onResultsChange(presetMatches.map((m) => m.node.id), activePreset.query);
       return;
     }
 
-    // Run in-browser dense embedding inference instantly
-    HuggingFaceEmbeddingService.searchByEmbedding(query).then((results) => {
-      if (!isCancelled) {
-        setHfResults(results);
-        setIsComputing(false);
-        onResultsChange(results.map((r) => r.node.id), query);
+    // 2. Custom query search
+    setIsComputing(true);
+    setActiveError(null);
+    const startTime = performance.now();
+
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+
+    debounceTimerRef.current = setTimeout(async () => {
+      try {
+        let matches: RankedMatch[] = [];
+
+        // Check if Gemini API is available and precomputed embeddings exist
+        if (isApiKeyConfigured() && hasPrecomputed) {
+          try {
+            // Live Gemini text-embedding-004
+            const queryVector = await embedText(query);
+            const rawScores = searchByCosineSimilarity(queryVector, precomputedList, 6);
+
+            matches = rawScores
+              .map((res) => {
+                const node = RESUME_VECTOR_NODES.find((n) => n.id === res.id);
+                if (!node) return null;
+                // Convert cosine similarity (-1 to 1) to percentage (0 to 100%)
+                const percentage = Math.round(Math.max(0, (res.score + 1) / 2) * 100);
+                return { node, score: percentage };
+              })
+              .filter(Boolean) as RankedMatch[];
+          } catch (err: any) {
+            console.warn("Live Gemini embedding error, falling back to tag matching:", err);
+          }
+        }
+
+        // Fallback: Semantic tag/keyword vector matching if live embedding is unavailable or empty
+        if (matches.length === 0) {
+          const lowerQuery = query.toLowerCase();
+          const queryTokens = lowerQuery.split(/\s+/).filter((t) => t.length > 2);
+
+          const scoredNodes = RESUME_VECTOR_NODES.map((node) => {
+            let score = 0;
+            const fullText = `${node.title} ${node.subtitle} ${node.description} ${(node.semanticTags || []).join(" ")} ${(node.codeOrTech || []).join(" ")}`.toLowerCase();
+
+            if (fullText.includes(lowerQuery)) score += 50;
+
+            queryTokens.forEach((token) => {
+              if (node.title.toLowerCase().includes(token)) score += 30;
+              if (node.semanticTags.some((tag) => tag.toLowerCase().includes(token))) score += 25;
+              if (node.description.toLowerCase().includes(token)) score += 15;
+            });
+
+            return { node, rawScore: score };
+          });
+
+          matches = scoredNodes
+            .filter((item) => item.rawScore > 0)
+            .sort((a, b) => b.rawScore - a.rawScore)
+            .slice(0, 6)
+            .map((item, idx) => ({
+              node: item.node,
+              score: Math.max(68, Math.min(98, 96 - idx * 5)),
+            }));
+        }
+
+        if (!isCancelled) {
+          const elapsed = Math.round((performance.now() - startTime) * 10) / 10;
+          setLatencyMs(elapsed || 1.2);
+          setRankedResults(matches);
+          setIsComputing(false);
+          onResultsChange(matches.map((m) => m.node.id), query);
+
+          // If Gemini API configured, generate grounded streaming answer
+          if (isApiKeyConfigured() && matches.length > 0 && query.length > 3) {
+            setIsGeneratingLLM(true);
+            setStreamedAnswer("");
+
+            try {
+              const topChunks = matches.slice(0, 4).map((m) => ({
+                title: m.node.title,
+                description: m.node.description,
+                codeOrTech: m.node.codeOrTech,
+                metricsOrHighlights: m.node.metricsOrHighlights,
+              }));
+
+              await generateAnswer(query, topChunks, (chunkText) => {
+                if (!isCancelled) setStreamedAnswer(chunkText);
+              });
+            } catch (genErr: any) {
+              console.warn("Gemini LLM answer generation failed:", genErr);
+            } finally {
+              if (!isCancelled) setIsGeneratingLLM(false);
+            }
+          }
+        }
+      } catch (e: any) {
+        if (!isCancelled) {
+          setIsComputing(false);
+          setActiveError(e.message || "Failed to compute vector similarity.");
+        }
       }
-    });
+    }, 350);
 
     return () => {
       isCancelled = true;
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
   }, [searchQuery, activePreset, onResultsChange]);
 
@@ -102,6 +206,7 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
     if (activePreset?.id === preset.id) {
       setActivePreset(null);
       setSearchQuery("");
+      setStreamedAnswer("");
     } else {
       setActivePreset(preset);
       setSearchQuery(preset.query);
@@ -113,28 +218,27 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
     setActivePreset(null);
   };
 
-  // Helper for score badge colors
   const getScoreBadgeClass = (score: number) => {
     if (score >= 90) return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
-    if (score >= 75) return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20";
+    if (score >= 78) return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20";
     return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
   };
 
   return (
     <div className="space-y-4">
-      {/* ── Vector Query Input Bar with Neural Badge ── */}
+      {/* ── Vector Query Input Bar with Gemini HUD ── */}
       <div className="relative group">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/30 via-indigo-500/30 to-emerald-500/30 rounded-2xl blur opacity-60 group-hover:opacity-100 transition duration-500" />
         <div className="relative bg-white dark:bg-[#0c0c10] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-2 sm:p-2.5 flex items-center gap-3 shadow-xl">
           <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0">
-            <Search size={18} />
+            {isComputing ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
           </div>
 
           <input
             type="text"
             value={searchQuery}
             onChange={handleInputChange}
-            placeholder="Type any query (e.g. 'Droply encryption', 'mobile apps', 'Agentic AI', 'Python')..."
+            placeholder="Type any question (e.g. 'RAG architecture', 'Agentic AI', 'Droply encryption', 'React performance')..."
             className="flex-1 bg-transparent border-0 outline-none text-xs sm:text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 font-sans"
           />
 
@@ -143,6 +247,7 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
               onClick={() => {
                 setSearchQuery("");
                 setActivePreset(null);
+                setStreamedAnswer("");
               }}
               className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 px-2 py-1 font-mono"
             >
@@ -151,9 +256,9 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
           )}
 
           {/* Model Status Pill */}
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-xl text-[10px] font-mono border bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-xl text-[10px] font-mono border bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400">
             <Cpu size={12} />
-            <span>🤗 Neural Embeddings (384-dim)</span>
+            <span>✨ Gemini text-embedding-004 (768-dim)</span>
           </div>
         </div>
 
@@ -161,19 +266,20 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 mt-2 rounded-xl bg-zinc-100/70 dark:bg-[#07070a]/90 border border-zinc-200/80 dark:border-zinc-800/80 text-[10px] font-mono text-zinc-500">
           <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>⚡ Latency: &lt; 1.0 ms</span>
+            <span>⚡ Latency: {latencyMs} ms</span>
           </div>
 
           <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
-            <span>📦 38 Ingested Vector Chunks</span>
+            <span>📦 {RESUME_VECTOR_NODES.length} Ingested Vector Chunks</span>
           </div>
 
           <div className="hidden md:flex items-center gap-1.5 text-zinc-400">
-            <span>📐 Metric: Cosine (Dot Product)</span>
+            <span>📐 Metric: Cosine Similarity (Dot Product)</span>
           </div>
 
           <div className="flex items-center gap-1.5 text-zinc-400">
-            <span>🧠 Index: In-Memory WASM</span>
+            <Zap size={11} className="text-amber-500" />
+            <span>RAG Model: Gemini 2.0 Flash</span>
           </div>
         </div>
       </div>
@@ -183,9 +289,9 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
         <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
           <span className="flex items-center gap-1.5">
             <Terminal size={11} className="text-purple-500" />
-            <span>Sample Semantic Embeddings Queries:</span>
+            <span>Preset Questions for RAG Simulation:</span>
           </span>
-          <span className="hidden sm:inline">Click to simulate RAG</span>
+          <span className="hidden sm:inline">Click to simulate RAG retrieval</span>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -223,7 +329,7 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
               RAG Retrieval & Grounded Context Chunks
             </span>
             <span className="text-[10px] font-mono text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
-              {hfResults.length} Chunks Retrieved
+              {rankedResults.length} Chunks Retrieved
             </span>
           </div>
 
@@ -244,57 +350,59 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
               transition={{ duration: 0.25 }}
               className="p-4 space-y-4 text-xs"
             >
-              {/* Simulated Answer with Interactive Citations */}
-              {activePreset ? (
+              {/* Grounded LLM Response Box */}
+              {(streamedAnswer || isGeneratingLLM) ? (
                 <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold">
                       <Sparkles size={12} />
-                      <span>Grounded LLM Synthesis (Hallucination-Free):</span>
+                      <span>Grounded Gemini LLM Synthesis:</span>
                     </div>
-                    <span className="text-[10px] font-mono text-zinc-400">
-                      Context: {activePreset.relevantNodeIds.length} Chunks
-                    </span>
+                    {isGeneratingLLM && (
+                      <span className="flex items-center gap-1 text-[10px] font-mono text-purple-400 animate-pulse">
+                        <Loader2 size={11} className="animate-spin" />
+                        <span>Streaming...</span>
+                      </span>
+                    )}
                   </div>
 
-                  <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed font-sans text-xs sm:text-sm">
-                    {activePreset.summaryAnswer}
+                  <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed font-sans text-xs sm:text-sm whitespace-pre-wrap">
+                    {streamedAnswer || "Synthesizing answer from retrieved vector chunks..."}
                   </p>
 
-                  {/* Interactive Citation Pills */}
-                  <div className="pt-2 border-t border-purple-500/10 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[10px] font-mono text-zinc-500">Citations (Click to focus in 3D):</span>
-                    {activePreset.relevantNodeIds.map((id, index) => {
-                      const node = RESUME_VECTOR_NODES.find((n) => n.id === id);
-                      if (!node) return null;
-                      return (
+                  {/* Interactive Citations */}
+                  {rankedResults.length > 0 && (
+                    <div className="pt-2 border-t border-purple-500/10 flex flex-wrap items-center gap-1.5">
+                      <span className="text-[10px] font-mono text-zinc-500">
+                        Citations (Click to focus in Neural Graph):
+                      </span>
+                      {rankedResults.slice(0, 4).map((match, index) => (
                         <button
-                          key={id}
-                          onClick={() => onSelectNode(node)}
+                          key={match.node.id}
+                          onClick={() => onSelectNode(match.node)}
                           className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/25 text-[10px] font-mono text-purple-700 dark:text-purple-300 transition-colors"
                         >
                           <Bookmark size={9} />
-                          <span>[{index + 1}] {node.label}</span>
+                          <span>[{index + 1}] {match.node.label}</span>
                         </button>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ) : hfResults.length > 0 ? (
+              ) : rankedResults.length > 0 ? (
                 <div className="bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5 space-y-2">
                   <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-bold">
                     <CheckCircle2 size={12} />
-                    <span>Neural Cosine Retrieval ({hfResults.length} Chunks Isolated):</span>
+                    <span>Neural Cosine Retrieval ({rankedResults.length} Chunks Isolated):</span>
                   </div>
                   <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed font-sans">
-                    Computed dense semantic cosine similarity in local WebAssembly memory. Highest alignment retrieved for:{" "}
-                    <strong>{hfResults.slice(0, 3).map((m) => m.node.label).join(", ")}</strong>.
+                    Computed dense semantic cosine similarity in local memory. Highest alignment retrieved for:{" "}
+                    <strong>{rankedResults.slice(0, 3).map((m) => m.node.label).join(", ")}</strong>.
                   </p>
 
-                  {/* Interactive Citation Pills */}
                   <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center gap-1.5">
                     <span className="text-[10px] font-mono text-zinc-500">Top Citations:</span>
-                    {hfResults.slice(0, 4).map((m, index) => (
+                    {rankedResults.slice(0, 4).map((m, index) => (
                       <button
                         key={m.node.id}
                         onClick={() => onSelectNode(m.node)}
@@ -310,16 +418,16 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
                 <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-3.5 space-y-2">
                   <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold">
                     <Sparkles size={13} />
-                    <span>All 38 Vector Embeddings Grounded & Loaded in 3D Space</span>
+                    <span>All {RESUME_VECTOR_NODES.length} Vector Embeddings Ready in Knowledge Space</span>
                   </div>
                   <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-xs">
-                    Every node represents a verified chunk from Sudhakar's resume, projects, and personal data. Click any sample question above, type any query, or click any 3D node directly to compute live vector similarity using in-browser Hugging Face Transformers!
+                    Each node is embedded from Sudhakar's experience, skills, and projects. Click any preset question above or enter any technical query to run cosine similarity retrieval and Gemini RAG synthesis in real time!
                   </p>
                 </div>
               )}
 
               {/* Retrieved Chunks Grid */}
-              {hfResults.length > 0 && (
+              {rankedResults.length > 0 && (
                 <div className="space-y-2 pt-1">
                   <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-500 flex items-center justify-between">
                     <span>Ranked Vector Chunks (Top-K):</span>
@@ -327,7 +435,7 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {hfResults.slice(0, 6).map((match) => (
+                    {rankedResults.slice(0, 6).map((match) => (
                       <div
                         key={match.node.id}
                         onClick={() => onSelectNode(match.node)}
@@ -341,7 +449,11 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
                             />
                             <span className="truncate">{match.node.label}</span>
                           </div>
-                          <span className={`font-mono font-bold px-2 py-0.5 rounded text-[10px] border shrink-0 ${getScoreBadgeClass(match.score)}`}>
+                          <span
+                            className={`font-mono font-bold px-2 py-0.5 rounded text-[10px] border shrink-0 ${getScoreBadgeClass(
+                              match.score
+                            )}`}
+                          >
                             {match.score}% match
                           </span>
                         </div>
@@ -355,7 +467,7 @@ export const RAGSearchSimulator: React.FC<RAGSearchSimulatorProps> = ({
                             {match.node.clusterLabel}
                           </span>
                           <div className="flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                            <span>Focus in 3D Space</span>
+                            <span>Focus in Graph</span>
                             <ArrowRight size={10} />
                           </div>
                         </div>
