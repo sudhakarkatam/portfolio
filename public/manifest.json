@@ -1,13 +1,27 @@
 {
-  "name": "Sudhakar Reddy Katam | AI Portfolio",
+  "name": "Sudhakar Reddy Katam | Software Engineer & AI Systems",
   "short_name": "Sudhakar Portfolio",
-  "description": "AI-powered portfolio showcasing projects, skills, and experience in software engineering",
+  "description": "Portfolio of Sudhakar Reddy Katam, showcasing full-stack systems, agentic AI, RAG pipelines, and mobile applications.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#1e40af",
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
   "orientation": "portrait-primary",
   "categories": ["portfolio", "technology", "software"],
   "lang": "en",
-  "scope": "/"
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/favicon-round.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/profile-pic.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any"
+    }
+  ]
 }

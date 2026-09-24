@@ -49,7 +49,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, theme
             className="flex items-center gap-2.5 cursor-pointer group outline-none"
           >
             <img
-              src="/profile pic.png"
+              src="/profile-pic.webp"
               className="w-7 h-7 rounded-full object-cover shrink-0 border border-zinc-300 dark:border-zinc-700 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300"
               alt="Sudhakar Reddy Katam"
               loading="lazy"
