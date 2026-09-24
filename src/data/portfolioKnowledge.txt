@@ -1,41 +1,191 @@
+# ─────────────────────────────────────────────────
 # SUDHAKAR REDDY KATAM — PORTFOLIO KNOWLEDGE BASE
+# SINGLE SOURCE OF TRUTH FOR CHATBOT & EMBEDDINGS
+# ─────────────────────────────────────────────────
+# HOW TO EDIT OR ADD NEW INFO IN THE FUTURE:
+# 1. To add a new skill, project, or section:
+#    - Add "---" on a new line.
+#    - Add metadata tags:
+#        @title: Section Title (e.g. My New Project Name)
+#        @cluster: Category (e.g. Projects, Skills, Education)
+#        @keywords: comma, separated, search, words, including, typos
+#        @link: https://direct-link.com (optional)
+#    - Leave a blank line, then type your description.
+# 2. To update existing info (like adding a certificate or changing contact):
+#    - Just edit the text under the corresponding section below.
+# 3. After editing:
+#    - Run: node scripts/generateEmbeddings.js
+#    - That's it! Both the Chatbot and the 3D Graph update automatically.
+# ─────────────────────────────────────────────────
 
-## 1. Professional Identity & Current Work Status
-Sudhakar Reddy Katam is a versatile Full-Stack Software Engineer and AI Systems Developer. He specializes in building production web applications, mobile platforms, and Agentic AI/RAG architectures. He is currently actively exploring and open to full-time Software Engineering roles, contract engineering positions, and freelance opportunities globally. He is based in India and fully equipped for remote and on-site engineering roles.
+---
+@title: Professional Identity, Location & Current Work Status
+@cluster: Identity & Status
+@keywords: who, name, identity, location, where, from, live, reside, based, india, telangana, hyderabad, country, status, working, employed, available, job, role, hire, open, freelance, contract, remote
+@link: https://www.linkedin.com/in/sudhakar-katam
 
-## 2. Core Philosophy & Engineering Approach
-Sudhakar is a developer who learns by building production systems end-to-end. He is comfortable across the entire stack—from high-performance browser interfaces and cryptography to distributed backend systems, vector databases, and autonomous AI agents. He is deeply interested in both software engineering and hardware systems, focusing on clean code, zero-knowledge security, offline resilience, and fast user experiences.
+Sudhakar Reddy Katam is a versatile Full-Stack Software Engineer and AI Systems Developer. He is based in India (Telangana / Hyderabad, India) and currently resides and works in India. He is currently actively exploring and open to full-time Software Engineering roles, contract engineering positions, and freelance opportunities globally, equipped for both global remote work and on-site engineering roles.
 
-## 3. Production Project: Droply (End-to-End Encrypted File Sharing)
-Droply is an ephemeral, zero-knowledge, end-to-end encrypted file sharing and real-time messaging platform. It utilizes the browser Web Crypto API (AES-GCM 256-bit with PBKDF2 key derivation) so encryption and decryption happen strictly on the client side. Plaintext files and decryption keys never reach the server. Files are stored in zero-knowledge encrypted buckets with strict Time-To-Live (TTL) room expiration, auto-destruction upon download, and zero mandatory user registration. Droply is deployed and live on Netlify.
+---
+@title: Official Resume & CV (PDF Download)
+@cluster: Resume & Documents
+@keywords: resume, cv, curriculum vitae, pdf, download, credentials, drive, google drive, document, view resume, get resume
+@link: https://drive.google.com/file/d/1qNzycHvflNO2lLynBD3ao9udHO0bJIYJ/view?usp=sharing
 
-## 4. Production Project: Personal Tracker Application
+Sudhakar Reddy Katam's official, verified ATS-formatted resume is available for viewing and direct PDF download on Google Drive:
+[Resume on Google Drive](https://drive.google.com/file/d/1qNzycHvflNO2lLynBD3ao9udHO0bJIYJ/view?usp=sharing)
+Direct Google Drive URL: https://drive.google.com/file/d/1qNzycHvflNO2lLynBD3ao9udHO0bJIYJ/view?usp=sharing
+
+The resume highlights his full-stack engineering background, production deployments (Droply, Personal Tracker, Financial Calculators, PureValuePicks), core technical stack (React, Next.js, TypeScript, Python, FastAPI, Java, Spring Boot, RAG pipelines, Docker, AWS), Computer Science education, and contact details.
+
+---
+@title: Core Technical Skills & Programming Languages Matrix
+@cluster: Technical Skills
+@keywords: skills, tech stack, languages, tools, frameworks, react, typescript, javascript, python, java, spring boot, node.js, sql, postgresql, mysql, docker, aws, git, fullstack, backend, frontend, technologies, what skills
+@link: https://github.com/sudhakarkatam
+
+Sudhakar Reddy Katam possesses a comprehensive technical skill set across frontend, backend, databases, AI systems, and cloud infrastructure:
+- Programming Languages: TypeScript, JavaScript (ES6+), Python, Java, SQL, HTML5, CSS3.
+- Frontend Engineering: React 18, Next.js (App Router, Server-Side Rendering, Static Site Generation), Tailwind CSS, shadcn/ui, Chart.js, Vite.
+- Backend & APIs: Node.js, Express, Python (FastAPI), Java (Spring Boot), RESTful API design, microservices architecture, serverless functions.
+- Databases & Vector Storage: PostgreSQL with pgvector for high-dimensional semantic search, Supabase, MySQL, Redis (in-memory caching), Firebase.
+- AI & Agentic Systems: Retrieval-Augmented Generation (RAG), Agentic AI workflows, LangChain, LangGraph, Model Context Protocol (MCP), Google Gemini Embeddings (768/3072 dimensions), Mistral AI / Codestral, Anthropic Claude, Prompt Engineering, Structured JSON extraction.
+- Mobile & Offline-First: Capacitor (native Android APK bundling), Progressive Web Apps (PWA), browser IndexedDB, Service Workers, offline sync.
+- Cloud, DevOps & Tools: Docker containerization, AWS (S3, EC2), Vercel edge deployment, Netlify, Git, GitHub Actions CI/CD workflows, Postman.
+
+---
+@title: Core Philosophy & Engineering Approach
+@cluster: Philosophy & Bio
+@keywords: philosophy, approach, engineering, full-stack, learning, building, bio, about, yourself, introduce, background, story, curious, hardware, software
+@link: https://github.com/sudhakarkatam
+
+Sudhakar is a developer who loves learning by building production systems end-to-end. He is comfortable across the entire stack — from high-performance browser interfaces and cryptography to distributed backend systems, vector databases, and autonomous AI agents. He is deeply interested in both software engineering and hardware systems, focusing on clean code, zero-knowledge security, offline resilience, and fast user experiences.
+
+---
+@title: Production Project — Droply (End-to-End Encrypted File Sharing)
+@cluster: Security & Cryptography
+@keywords: droply, encrypt, decrypt, file, sharing, crypto, zero-knowledge, privacy, security, aes, webcrypto, pbkdf2, ephemeral, messaging, netlify
+@link: https://droply-app.netlify.app
+
+Droply is an ephemeral, zero-knowledge, end-to-end encrypted file sharing and real-time messaging platform. It utilizes the browser Web Crypto API (AES-GCM 256-bit with PBKDF2 key derivation) so encryption and decryption happen strictly on the client side. Plaintext files and decryption keys never reach the server. Files are stored in zero-knowledge encrypted buckets with strict Time-To-Live (TTL) room expiration, auto-destruction upon download, and zero mandatory user registration.
+- Live Web Application: https://droply-app.netlify.app
+- Source Code Repository: https://github.com/sudhakarkatam/droply_app
+
+---
+@title: Production Project — Personal Tracker Application
+@cluster: Mobile & Offline-First
+@keywords: tracker, personal, habit, offline, indexeddb, mobile, android, capacitor, journal, notes, expense, wellness, streak, task, shadcn
+@link: https://github.com/sudhakarkatam/tracker22
+
 Personal Tracker is an offline-first mobile application built for Android using React, TypeScript, Capacitor, and IndexedDB with a modern shadcn/ui interface. It provides comprehensive habit formation tracking, daily task management with subtasks, markdown notes and journaling, expense tracking, and wellness metrics. The application features a skip-day streak preservation system, interactive progress visualization charts, and runs completely offline with zero server dependency for total user privacy.
+- Source Code Repository: https://github.com/sudhakarkatam/tracker22
 
-## 5. Production Project: Financial Calculators Suite
+---
+@title: Production Project — Financial Calculators Suite
+@cluster: Mobile & Play Store App
+@keywords: calculator, financial, investment, sip, swp, emi, loan, compound, play store, android, pwa, capacitor, mobile
+@link: https://play.google.com/store/apps/details?id=com.easecraft.financialcalculator
+
 Financial Calculators is a mobile-first Progressive Web Application and Android application published on the Google Play Store. Built with React, TypeScript, and Capacitor, it provides instant precision calculators for investments and loans, including SIP (Systematic Investment Plan), SWP (Systematic Withdrawal Plan), Compound Interest, and Loan EMI calculators. It features responsive visualization charts, fast native performance, and edge deployment.
+- Google Play Store Download: https://play.google.com/store/apps/details?id=com.easecraft.financialcalculator
+- Source Code Repository: https://github.com/sudhakarkatam/finance_cal
 
-## 6. Production Project: PureValuePicks E-Commerce Store
+---
+@title: Production Project — PureValuePicks E-Commerce Store
+@cluster: Full-Stack Web Apps
+@keywords: ecommerce, store, shop, cart, checkout, next.js, supabase, postgresql, product, catalog, authentication, purevaluepicks
+@link: https://www.purevaluepicks.store
+
 PureValuePicks is a responsive full-stack e-commerce storefront engineered with React, Next.js, and TypeScript. It features a complete product catalog, shopping cart state management, checkout workflows, and user authentication with Supabase and PostgreSQL. It delivers high performance, responsive layout design, and smooth checkout transitions.
+- Live E-Commerce Store: https://www.purevaluepicks.store
 
-## 7. Production Project: Live Production Hub
+---
+@title: Production Project — Live Production Hub
+@cluster: System Deployments
+@keywords: hub, production, deployment, command, center, health, documentation, live, demo, showcase
+@link: https://github.com/sudhakarkatam
+
 The Live Production Hub serves as a unified command center aggregating Sudhakar's deployed web applications, mobile builds, and open-source tools. Built with React and TypeScript, it displays live deployment health checks, technical documentation, architectural breakdowns, and direct links to live demonstrations and GitHub source repositories.
+- GitHub Source: https://github.com/sudhakarkatam
 
-## 8. AI & Agentic RAG Architecture Expertise
-Sudhakar has deep hands-on expertise building production Retrieval-Augmented Generation (RAG) and Agentic AI workflows. He designs semantic search pipelines using high-dimensional vector embeddings (Google Gemini embedding models with 3072 dimensions, cosine similarity search), structured JSON Schema extraction, and autonomous agent loops. His AI stack includes LangGraph, CrewAI, Google Gemini, Anthropic Claude, Mistral AI (Codestral), Model Context Protocol (MCP), and local embeddings pipelines.
+---
+@title: AI & Agentic RAG Architecture Expertise
+@cluster: AI & RAG Architecture
+@keywords: ai, rag, agent, agentic, embedding, vector, llm, codestral, gemini, mistral, claude, mcp, langgraph, crewai, semantic, search, pipeline, autonomous
+@link: https://github.com/sudhakarkatam
 
-## 9. Full-Stack & Frontend Engineering Stack
+Sudhakar has deep hands-on expertise building production Retrieval-Augmented Generation (RAG) and Agentic AI workflows. He designs semantic search pipelines using high-dimensional vector embeddings (Google Gemini embedding models with 768 and 3072 dimensions, cosine similarity search), structured JSON Schema extraction, and autonomous agent loops. His AI stack includes LangGraph, CrewAI, Google Gemini, Anthropic Claude, Mistral AI (Codestral), Model Context Protocol (MCP), and local embeddings pipelines.
+
+---
+@title: Full-Stack & Frontend Engineering Stack
+@cluster: Frontend & Mobile
+@keywords: frontend, react, next.js, nextjs, typescript, css, tailwind, shadcn, ui, mobile, capacitor, android, apk, indexeddb, service-worker, ssr, app-router
+@link: https://github.com/sudhakarkatam
+
 Sudhakar's frontend expertise encompasses React 18, Next.js with App Router and Server-Side Rendering (SSR), TypeScript, and Vanilla CSS with Tailwind CSS and shadcn/ui. He has extensive mobile development experience using Capacitor to bundle web applications into native Android APKs. He designs resilient offline-first architectures utilizing browser IndexedDB, Service Workers, and client-side encryption.
 
-## 10. Backend Engineering, Databases & Cloud Systems
+---
+@title: Backend Engineering, Databases & Cloud Systems
+@cluster: Backend & Cloud
+@keywords: backend, api, server, database, postgres, postgresql, pgvector, sql, mysql, redis, python, fastapi, java, spring, spring-boot, node.js, docker, aws, vercel, ci/cd, microservices, rest
+@link: https://github.com/sudhakarkatam
+
 On the backend, Sudhakar engineers scalable microservices, REST APIs, and event-driven architectures using Python (FastAPI), Node.js, and Java with Spring Boot. His database proficiency includes PostgreSQL with pgvector for vector similarity search, Supabase, MySQL, and Redis for high-throughput in-memory caching. His infrastructure and DevOps toolkit includes Docker containerization, AWS cloud services, Git/GitHub CI/CD workflows, and Vercel edge deployment.
 
-## 11. Computer Science Foundations & Security
+---
+@title: Computer Science Foundations & Security
+@cluster: Security & CS Foundations
+@keywords: cs, computer-science, dsa, algorithms, data-structures, oop, system-design, security, cryptography, aes, pbkdf2, zero-knowledge, sql, optimization
+@link: https://github.com/sudhakarkatam
+
 Sudhakar holds a strong foundation in core Computer Science fundamentals: Data Structures, Algorithms, Object-Oriented Programming (OOP), System Design, and Web Application Security. He emphasizes client-side cryptography (Web Crypto API, AES-GCM, PBKDF2), zero-knowledge architectures, SQL query optimization, and secure API design.
 
-## 12. Contact Information & Online Presence
-Sudhakar Reddy Katam can be reached directly via email at sudhakarkatam777@gmail.com.
-His public code repositories and open-source contributions are hosted on GitHub at https://github.com/sudhakarkatam.
-His professional career network and recommendations are on LinkedIn at https://linkedin.com/in/sudhakar-katam.
-His verified PDF resume is available for viewing and download via Google Drive.
-Sudhakar is open to discussions about full-time software engineering roles, technical co-founder opportunities, and contract projects.
+---
+@title: Education & Academic Background
+@cluster: Education
+@keywords: education, degree, college, university, study, btech, bachelor, academics, coursework, computer science, cse, engineering, dsa, os, dbms
+@link: https://www.linkedin.com/in/sudhakar-katam
+
+Sudhakar Reddy Katam pursued a Bachelor of Technology (B.Tech) degree in Computer Science and Engineering (CSE). His academic foundation covers:
+- Core Computer Science Coursework: Data Structures & Algorithms (DSA), Object-Oriented Programming (OOP), Database Management Systems (DBMS), Operating Systems (OS), Computer Networks, System Design, and Software Engineering.
+- Practical Engineering Projects: Applied foundational principles to build real-world software products, including cryptographic file sharing, offline Android utilities, and AI-driven retrieval systems.
+
+---
+@title: Certifications, Continuous Learning & Credentials
+@cluster: Certifications
+@keywords: certifications, certificates, courses, credentials, achievements, awards, learning, training, online courses
+@link: https://www.linkedin.com/in/sudhakar-katam
+
+Sudhakar is committed to continuous technical development and hands-on skill mastery:
+- Continuous Learning: Actively builds production applications with modern technologies including Agentic AI (MCP, LangGraph), high-dimensional vector embeddings, full-stack React/Next.js systems, and secure backend microservices.
+- Technical Mastery: Hands-on implementation of cryptography (Web Crypto API), offline-first architectures (Capacitor + IndexedDB), and scalable cloud infrastructure (Docker, AWS, Vercel).
+- Verified Credentials: For verified certifications or transcripts, connect directly via LinkedIn or email.
+
+---
+@title: Work Preferences, Availability & Global Hiring Details
+@cluster: Hiring & Work Preferences
+@keywords: availability, hire, open to work, relocate, remote, notice period, full-time, contract, freelance, salary, timezone, working with, opportunity
+@link: mailto:sudhakarkatam777@gmail.com
+
+Sudhakar Reddy Katam's hiring and collaboration preferences:
+- Availability: Open to immediate joining for full-time Software Engineering roles, contract engineering positions, and freelance software development.
+- Work Models: Available for global remote work across US, European, and Asian time zones, as well as on-site or hybrid roles in India (Hyderabad, Bengaluru, etc.).
+- Role Types: Full-Stack Engineer, Frontend Engineer (React/TypeScript), Backend Engineer (Python/FastAPI/Java/Node), and AI Systems / RAG Developer.
+- Communication: Direct and responsive via email (sudhakarkatam777@gmail.com) and LinkedIn.
+
+---
+@title: Contact Information & Online Presence
+@cluster: Contact & Hiring
+@keywords: contact, email, reach, hire, touch, call, message, linkedin, github, twitter, telegram, discord, opportunities, co-founder
+@link: mailto:sudhakarkatam777@gmail.com
+
+Sudhakar Reddy Katam can be reached directly via:
+- Direct Email: sudhakarkatam777@gmail.com
+- GitHub: https://github.com/sudhakarkatam
+- LinkedIn: https://www.linkedin.com/in/sudhakar-katam
+- Twitter / X: https://x.com/sudhakarkatam2
+- Telegram: https://t.me/Sudha7248
+- Discord: https://discord.com/users/sudhakar0379
+- Official Resume (Google Drive): https://drive.google.com/file/d/1qNzycHvflNO2lLynBD3ao9udHO0bJIYJ/view?usp=sharing
+
+Sudhakar is open to discussions about full-time Software Engineering roles, contract engineering positions, freelance projects, and technical co-founder opportunities globally.

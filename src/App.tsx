@@ -8,8 +8,27 @@ import PortfolioPage from "./pages/PortfolioPage";
 const ProjectsPage = lazy(() => import("./pages/ProjectsPage"));
 const ResumePage = lazy(() => import("./pages/ResumePage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const PortfolioChatbot = lazy(() => import("./components/chat/PortfolioChatbot"));
 
-import { PortfolioChatbot } from "./components/chat/PortfolioChatbot";
+class ChatbotErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any) {
+    console.warn("Chatbot caught in boundary, main portfolio view preserved:", error);
+  }
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
 
 export const App: React.FC = () => {
   return (
@@ -27,7 +46,11 @@ export const App: React.FC = () => {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
-      <PortfolioChatbot />
+      <ChatbotErrorBoundary>
+        <Suspense fallback={null}>
+          <PortfolioChatbot />
+        </Suspense>
+      </ChatbotErrorBoundary>
       <Analytics />
       <SpeedInsights />
     </BrowserRouter>

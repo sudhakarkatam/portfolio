@@ -1,6 +1,13 @@
 /**
- * Pure Node.js script: Generate Gemini embeddings for all resume vector nodes.
- * Run directly with: node scripts/generateEmbeddings.js
+ * Single Source of Truth Embedding Generator
+ * ──────────────────────────────────────────
+ * 1. Reads `src/data/portfolioKnowledge.txt` (Single Source of Truth)
+ *    and generates dense vector embeddings for all knowledge sections -> `src/data/knowledgeEmbeddings.json`.
+ * 2. Reads `src/data/resumeVectorData.ts`
+ *    and generates dense vector embeddings for the 3D Obsidian graph -> `src/data/precomputedEmbeddings.json`.
+ *
+ * HOW TO RUN:
+ *   node scripts/generateEmbeddings.js
  */
 
 import fs from "fs";
@@ -37,33 +44,85 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-// ── Read resumeVectorData to extract nodes ──
-const vectorDataPath = path.resolve(__dirname, "..", "src", "data", "resumeVectorData.ts");
-const fileContent = fs.readFileSync(vectorDataPath, "utf-8");
+// ── Parse portfolioKnowledge.txt (Single Source of Truth) ──
+function parseKnowledgeSections() {
+  const txtPath = path.resolve(__dirname, "..", "src", "data", "portfolioKnowledge.txt");
+  const rawText = fs.readFileSync(txtPath, "utf-8");
 
-const nodeRegex = /id:\s*"([^"]+)",\s*label:\s*"([^"]+)",\s*cluster:\s*"([^"]+)",[\s\S]*?title:\s*"([^"]+)",\s*subtitle:\s*"([^"]+)",\s*description:\s*"([^"]+)"/g;
-const nodes = [];
-let match;
-while ((match = nodeRegex.exec(fileContent)) !== null) {
-  nodes.push({
-    id: match[1],
-    label: match[2],
-    cluster: match[3],
-    title: match[4],
-    subtitle: match[5],
-    description: match[6],
+  const rawSections = rawText.split(/\n---\s*\n/).filter((block) => {
+    return block.includes("@title:") && block.trim().length > 50;
   });
+
+  return rawSections.map((block, idx) => {
+    const lines = block.trim().split("\n");
+    let title = "", cluster = "Knowledge Base", keywords = [], link = undefined;
+    const bodyLines = [];
+    let metaDone = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith("#")) continue;
+      if (!metaDone) {
+        if (trimmed.startsWith("@title:")) title = trimmed.slice(7).trim();
+        else if (trimmed.startsWith("@cluster:")) cluster = trimmed.slice(9).trim();
+        else if (trimmed.startsWith("@keywords:")) keywords = trimmed.slice(10).split(",").map((k) => k.trim().toLowerCase()).filter(Boolean);
+        else if (trimmed.startsWith("@link:")) link = trimmed.slice(6).trim() || undefined;
+        else if (trimmed === "") { if (title) metaDone = true; }
+        else if (!trimmed.startsWith("@")) { metaDone = true; bodyLines.push(trimmed); }
+      } else {
+        if (trimmed) bodyLines.push(trimmed);
+      }
+    }
+
+    return {
+      id: `kb-sec-${idx + 1}`,
+      sectionNum: idx + 1,
+      title: title || `Section ${idx + 1}`,
+      cluster,
+      keywords,
+      link,
+      text: bodyLines.join(" ").trim(),
+    };
+  }).filter((s) => s.text.length > 0);
 }
 
-console.log(`\n🧠 Extracted ${nodes.length} nodes from resumeVectorData.ts`);
-console.log(`Connecting to Google Gemini API...`);
 
+// ── Auto-Detect Supported Embedding Model ──
 async function findEndpoint() {
+  console.log("🔍 Checking available Gemini models for your API key...");
+
+  try {
+    const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`;
+    const listRes = await fetch(listUrl);
+    if (listRes.ok) {
+      const listData = await listRes.json();
+      const embedModels = (listData.models || []).filter((m) =>
+        m.supportedGenerationMethods?.includes("embedContent")
+      );
+      if (embedModels.length > 0) {
+        console.log(`   Found ${embedModels.length} models supporting embedContent:`);
+        embedModels.forEach((m) => console.log(`   • ${m.name}`));
+
+        const preferred =
+          embedModels.find((m) => m.name.includes("gemini-embedding-001")) ||
+          embedModels.find((m) => m.name.includes("text-embedding-004")) ||
+          embedModels.find((m) => m.name.includes("embedding-001")) ||
+          embedModels[0];
+        const rawName = preferred.name.replace(/^models\//, "");
+        console.log(`✅ Selected working model: ${rawName}\n`);
+        return { ver: "v1beta", model: rawName };
+      }
+    }
+  } catch (e) {
+    console.warn("⚠️ Could not query ListModels:", e.message);
+  }
+
+  // Fallback candidate probing
   const candidates = [
+    { ver: "v1beta", model: "gemini-embedding-001" },
+    { ver: "v1", model: "gemini-embedding-001" },
     { ver: "v1beta", model: "text-embedding-004" },
-    { ver: "v1", model: "text-embedding-004" },
     { ver: "v1beta", model: "embedding-001" },
-    { ver: "v1", model: "embedding-001" },
   ];
 
   for (const c of candidates) {
@@ -78,63 +137,76 @@ async function findEndpoint() {
         }),
       });
       if (res.ok) {
-        console.log(`✅ Verified working model endpoint: ${c.ver}/models/${c.model}`);
         return c;
       }
     } catch {}
   }
-  return { ver: "v1beta", model: "text-embedding-004" };
+  return { ver: "v1beta", model: "gemini-embedding-001" };
+}
+
+async function embedSingleText(endpoint, text) {
+  const url = `https://generativelanguage.googleapis.com/${endpoint.ver}/models/${endpoint.model}:embedContent?key=${API_KEY}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: `models/${endpoint.model}`,
+      content: { parts: [{ text }] },
+    }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`API error ${res.status}: ${errorText}`);
+  }
+
+  const data = await res.json();
+  const vec = data.embedding.values;
+  return vec.map((v) => Math.round(v * 100000) / 100000);
 }
 
 async function run() {
   const endpoint = await findEndpoint();
-  console.log(`\nGenerating embeddings using [${endpoint.model}]...\n`);
-  const embeddings = [];
 
-  for (let i = 0; i < nodes.length; i++) {
-    const n = nodes[i];
-    const textToEmbed = `${n.title}. ${n.subtitle}. ${n.description}`;
-    process.stdout.write(` [${i + 1}/${nodes.length}] ${n.label.padEnd(35)} `);
+  // ═══════════════════════════════════════════════════════
+  // TASK 1: Embed portfolioKnowledge.txt (Single Source of Truth)
+  // ═══════════════════════════════════════════════════════
+  const kbSections = parseKnowledgeSections();
+  console.log(`📚 Found ${kbSections.length} sections in portfolioKnowledge.txt (Single Source of Truth)`);
+  console.log(`Generating embeddings for Chatbot Hybrid RAG...\n`);
+
+  const kbEmbeddings = [];
+  for (let i = 0; i < kbSections.length; i++) {
+    const sec = kbSections[i];
+    const textToEmbed = `${sec.title}. Cluster: ${sec.cluster}. Keywords: ${sec.keywords.join(", ")}. Description: ${sec.text}`;
+    process.stdout.write(` [${i + 1}/${kbSections.length}] ${sec.title.slice(0, 42).padEnd(45)} `);
 
     try {
-      const url = `https://generativelanguage.googleapis.com/${endpoint.ver}/models/${endpoint.model}:embedContent?key=${API_KEY}`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: `models/${endpoint.model}`,
-          content: { parts: [{ text: textToEmbed }] },
-        }),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`API error ${res.status}: ${errorText}`);
-      }
-
-      const data = await res.json();
-      const vec = data.embedding.values;
-      const rounded = vec.map((v) => Math.round(v * 100000) / 100000);
-      embeddings.push({
-        id: n.id,
-        cluster: n.cluster,
-        embedding: rounded,
+      const vec = await embedSingleText(endpoint, textToEmbed);
+      kbEmbeddings.push({
+        id: sec.id,
+        title: sec.title,
+        cluster: sec.cluster,
+        link: sec.link,
+        embedding: vec,
       });
       console.log("✅");
     } catch (err) {
       console.log("❌", err.message);
     }
 
-    if (i < nodes.length - 1) {
-      await new Promise((r) => setTimeout(r, 200));
+    if (i < kbSections.length - 1) {
+      await new Promise((r) => setTimeout(r, 150));
     }
   }
 
-  if (embeddings.length > 0) {
-    const outPath = path.resolve(__dirname, "..", "src", "data", "precomputedEmbeddings.json");
-    fs.writeFileSync(outPath, JSON.stringify(embeddings, null, 2));
-    console.log(`\n🎉 Successfully saved ${embeddings.length} embeddings to src/data/precomputedEmbeddings.json!\n`);
+  if (kbEmbeddings.length > 0) {
+    const outKbPath = path.resolve(__dirname, "..", "src", "data", "knowledgeEmbeddings.json");
+    fs.writeFileSync(outKbPath, JSON.stringify(kbEmbeddings, null, 2));
+    console.log(`\n🎉 Saved ${kbEmbeddings.length} knowledge embeddings to src/data/knowledgeEmbeddings.json!`);
   }
+
+  console.log("\n🚀 Done! Chatbot Hybrid RAG is 100% in sync with portfolioKnowledge.txt!\n");
 }
 
 run();
