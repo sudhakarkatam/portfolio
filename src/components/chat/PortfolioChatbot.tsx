@@ -169,7 +169,7 @@ export const PortfolioChatbot: React.FC = () => {
     {
       id: "welcome-1",
       sender: "assistant",
-      text: "Hi! I am Sudhakar's AI assistant. Ask me anything about him or if you want to contact for hiring details I can help with your queries to know more",
+      text: "Hey! Ask me anything about my projects, tech stack, or engineering experience.",
       timestamp: "Just now",
     },
   ]);
@@ -206,7 +206,7 @@ export const PortfolioChatbot: React.FC = () => {
       {
         id: `welcome-${Date.now()}`,
         sender: "assistant",
-        text: "Hi! I am Sudhakar's AI assistant. Ask me anything about him or if you want to contact for hiring details I can help with your queries to know more",
+        text: "Hey! Ask me anything about my projects, tech stack, or engineering experience.",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       },
     ]);

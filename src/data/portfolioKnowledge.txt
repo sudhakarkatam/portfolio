@@ -41,7 +41,7 @@ The resume highlights his full-stack engineering background, production deployme
 ---
 @title: Core Technical Skills & Programming Languages Matrix
 @cluster: Technical Skills
-@keywords: skills, tech stack, languages, tools, frameworks, react, typescript, javascript, python, java, spring boot, node.js, sql, postgresql, mysql, docker, aws, git, fullstack, backend, frontend, technologies, what skills
+@keywords: skills, tech stack, stack, stck, languages, tools, frameworks, react, typescript, javascript, python, java, spring boot, node.js, sql, postgresql, mysql, docker, aws, git, fullstack, backend, frontend, technologies, what skills
 @link: https://github.com/sudhakarkatam
 
 Sudhakar Reddy Katam possesses a comprehensive technical skill set across frontend, backend, databases, AI systems, and cloud infrastructure:
@@ -56,7 +56,7 @@ Sudhakar Reddy Katam possesses a comprehensive technical skill set across fronte
 ---
 @title: Core Philosophy & Engineering Approach
 @cluster: Philosophy & Bio
-@keywords: philosophy, approach, engineering, full-stack, learning, building, bio, about, yourself, introduce, background, story, curious, hardware, software
+@keywords: philosophy, approach, engineering, full-stack, learning, building, bio, about me, yourself, introduce, background, story, curious, hardware, software
 @link: https://github.com/sudhakarkatam
 
 Sudhakar is a developer who loves learning by building production systems end-to-end. He is comfortable across the entire stack — from high-performance browser interfaces and cryptography to distributed backend systems, vector databases, and autonomous AI agents. He is deeply interested in both software engineering and hardware systems, focusing on clean code, zero-knowledge security, offline resilience, and fast user experiences.
