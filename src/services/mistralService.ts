@@ -42,11 +42,11 @@ export const getMistralKey = (): string => {
     const localKey = localStorage.getItem("VITE_MISTRAL_API_KEY") || localStorage.getItem("MISTRAL_API_KEY");
     if (localKey && localKey.trim()) return localKey.trim();
   }
-  return (
-    ((import.meta as any).env?.VITE_MISTRAL_API_KEY as string | undefined) ||
-    ((import.meta as any).env?.MISTRAL_API_KEY as string | undefined) ||
-    ""
-  ).trim();
+  const key =
+    import.meta.env.VITE_MISTRAL_API_KEY ||
+    import.meta.env.MISTRAL_API_KEY ||
+    "";
+  return String(key).trim();
 };
 
 export const isMistralKeyConfigured = (): boolean => {
@@ -98,7 +98,7 @@ export async function classifyIntentWithML(query: string, apiKey?: string): Prom
   const clean = query.trim().toLowerCase();
 
   // 1. Fast-path: Pure greetings (0ms latency)
-  if (/^(hi|hello|hey|yo|greetings|sup|good\s*(morning|afternoon|evening))[\s!.,?]*$/i.test(clean)) {
+  if (/^(hi|hello|hey|yo|greetings|sup|howdy|how\s*are\s*you|how's\s*it\s*going|good\s*(morning|afternoon|evening))[\s!.,?]*$/i.test(clean)) {
     return "GREETING";
   }
 
