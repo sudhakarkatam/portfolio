@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import {
   Bot,
   X,
@@ -258,7 +259,7 @@ export const PortfolioChatbot: React.FC = () => {
 
   const toggleVoiceInput = () => {
     if (!speechRecognitionRef.current) {
-      alert("Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.");
+      toast.error("Voice input is not supported in this browser. Try Chrome, Edge, or Safari.");
       return;
     }
 

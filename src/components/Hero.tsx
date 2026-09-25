@@ -122,7 +122,7 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
 
             {/* Plain text update date and live IST clock */}
             <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium pt-1">
-              Updated Aug 10, 2026 · {timeStr || "8:44 AM"} in India
+              Updated sep 25, 2026 · {timeStr || "8:44 AM"} in India
             </p>
           </div>
         </div>

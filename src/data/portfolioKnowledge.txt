@@ -146,7 +146,7 @@ Sudhakar holds a strong foundation in core Computer Science fundamentals: Data S
 @keywords: education, degree, college, university, study, btech, bachelor, academics, coursework, computer science, cse, engineering, dsa, os, dbms
 @link: https://www.linkedin.com/in/sudhakar-katam
 
-Sudhakar Reddy Katam pursued a Bachelor of Technology (B.Tech) degree in Computer Science and Engineering (CSE). His academic foundation covers:
+Sudhakar Reddy Katam pursued a Bachelor of Technology (B.Tech) degree in Computer Science and Engineering (CSE) from Malla Reddy University, Hyderabad, graduated in 2025.
 - Core Computer Science Coursework: Data Structures & Algorithms (DSA), Object-Oriented Programming (OOP), Database Management Systems (DBMS), Operating Systems (OS), Computer Networks, System Design, and Software Engineering.
 - Practical Engineering Projects: Applied foundational principles to build real-world software products, including cryptographic file sharing, offline Android utilities, and AI-driven retrieval systems.
 
@@ -189,3 +189,27 @@ Sudhakar Reddy Katam can be reached directly via:
 - Official Resume (Google Drive): https://drive.google.com/file/d/1qNzycHvflNO2lLynBD3ao9udHO0bJIYJ/view?usp=sharing
 
 Sudhakar is open to discussions about full-time Software Engineering roles, contract engineering positions, freelance projects, and technical co-founder opportunities globally.
+
+---
+@title: Freelance & Custom Software Development
+@cluster: Freelance & Services
+@keywords: freelance, build, website, app, hire, custom, project, develop, create, make, build me, can you build, commission, contract, web app, mobile app, software, service
+@link: mailto:sudhakarkatam777@gmail.com
+
+Yes, Sudhakar is available for freelance and custom software development work. He can build:
+- Full-stack web applications (React, Next.js, TypeScript, Node.js, Python/FastAPI)
+- Mobile apps (Android via React + Capacitor)
+- E-commerce platforms with admin dashboards
+- AI-integrated tools and RAG pipelines
+- Secure file-sharing or productivity tools
+
+To discuss a custom project, reach out directly via email at sudhakarkatam777@gmail.com or connect on LinkedIn. He'll respond promptly to discuss your requirements, timeline, and scope.
+
+---
+@title: Salary, Compensation & Engagement Terms
+@cluster: Hiring & Work Preferences
+@keywords: salary, compensation, ctc, pay, package, rate, hourly, budget, cost, money, expectations, negotiable, terms, engagement
+@link: mailto:sudhakarkatam777@gmail.com
+
+Sudhakar prefers to discuss salary, compensation, and engagement terms directly — every opportunity is different and deserves a real conversation. Please reach out via email at sudhakarkatam777@gmail.com or LinkedIn and he'll be happy to discuss expectations, budget, and terms openly. He is open to both salaried roles and contract/freelance rate-based engagements.
+
