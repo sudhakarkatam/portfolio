@@ -56,6 +56,8 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
         {/* Banner background image */}
         <img
           src={bannerSrc}
+          width={780}
+          height={192}
           onError={(e) => {
             (e.target as HTMLImageElement).src =
               "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1200&auto=format&fit=crop";
@@ -88,6 +90,8 @@ export const Hero: React.FC<HeroProps> = ({ name, bio, bannerImage, contact }) =
             <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-zinc-200 dark:border-zinc-700 shadow-xl ring-2 sm:ring-4 ring-zinc-100 dark:ring-zinc-900/80">
               <img
                 src="/profile-pic.webp"
+                width={112}
+                height={112}
                 className="w-full h-full object-cover bg-zinc-100 dark:bg-zinc-900"
                 alt={name}
                 fetchPriority="high"
