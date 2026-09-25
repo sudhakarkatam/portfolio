@@ -124,8 +124,32 @@ const renderFormattedText = (text: string) => {
           return <div key={lineIdx} className="h-0.5" />;
         }
 
+        // Markdown Dividers: e.g. "---"
+        if (/^---+$/.test(trimmed)) {
+          return <hr key={lineIdx} className="my-2 border-zinc-200 dark:border-zinc-800" />;
+        }
+
+        // Headings: e.g. "### 1. Project Title", "## Title", "# Title"
+        const headingMatch = trimmed.match(/^(#{1,4})\s*(.*)$/);
+        if (headingMatch) {
+          const level = headingMatch[1].length;
+          const headingContent = headingMatch[2];
+          return (
+            <div
+              key={lineIdx}
+              className={`font-bold text-zinc-950 dark:text-zinc-100 ${
+                level <= 2
+                  ? "text-sm mt-3 mb-1.5"
+                  : "text-xs font-semibold text-purple-600 dark:text-purple-400 mt-2 mb-1"
+              }`}
+            >
+              {formatInlineMarkdown(headingContent)}
+            </div>
+          );
+        }
+
         // Numbered list item: e.g. "1. **Droply**: ..."
-        const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+        const numMatch = trimmed.match(/^(\d+)\.\s*(.*)$/);
         if (numMatch) {
           return (
             <div key={lineIdx} className="flex items-start gap-2 my-1 pl-1">
@@ -139,8 +163,8 @@ const renderFormattedText = (text: string) => {
           );
         }
 
-        // Bullet item: e.g. "- ..." or "* ..." or "• ..."
-        const bulletMatch = trimmed.match(/^[-*•]\s+(.*)$/);
+        // Bullet item: e.g. "- ..." or "* ..." or "• ..." (supports optional space after symbol)
+        const bulletMatch = trimmed.match(/^[-*•]\s*(.*)$/);
         if (bulletMatch) {
           return (
             <div key={lineIdx} className="flex items-start gap-2 my-1 pl-1">
