@@ -36,7 +36,8 @@ export const ProjectsPage: React.FC = () => {
     if (id === "contact") {
       navigate("/#contact");
     } else if (id === "resume") {
-      navigate("/resume");
+      const resumeUrl = portfolioData.contact.resume || "https://drive.google.com/file/d/1qNzycHvflNO2lLynBD3ao9udHO0bJIYJ/view?usp=sharing";
+      window.open(resumeUrl, "_blank", "noopener,noreferrer");
     } else if (id === "about") {
       navigate("/");
     }

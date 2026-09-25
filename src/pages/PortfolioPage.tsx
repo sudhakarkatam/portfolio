@@ -64,9 +64,8 @@ export const PortfolioPage: React.FC = () => {
         navigate("/projects");
       }
     } else if (id === "resume") {
-      if (location.pathname !== "/resume") {
-        navigate("/resume");
-      }
+      const resumeUrl = portfolioData.contact.resume || "https://drive.google.com/file/d/1qNzycHvflNO2lLynBD3ao9udHO0bJIYJ/view?usp=sharing";
+      window.open(resumeUrl, "_blank", "noopener,noreferrer");
     } else if (id === "contact") {
       setActiveSection("contact");
       if (location.pathname !== "/") {

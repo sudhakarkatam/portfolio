@@ -1,10 +1,8 @@
 /**
  * Single Source of Truth Embedding Generator
  * ──────────────────────────────────────────
- * 1. Reads `src/data/portfolioKnowledge.txt` (Single Source of Truth)
- *    and generates dense vector embeddings for all knowledge sections -> `src/data/knowledgeEmbeddings.json`.
- * 2. Reads `src/data/resumeVectorData.ts`
- *    and generates dense vector embeddings for the 3D Obsidian graph -> `src/data/precomputedEmbeddings.json`.
+ * Reads `src/data/portfolioKnowledge.txt` (Single Source of Truth)
+ * and generates dense vector embeddings for all knowledge sections -> `src/data/knowledgeEmbeddings.json`.
  *
  * HOW TO RUN:
  *   node scripts/generateEmbeddings.js

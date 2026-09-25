@@ -109,13 +109,15 @@ export const Contact: React.FC<ContactProps> = ({ contact }) => {
 
             {/* ── Social Links as Labeled Pill Buttons with Branded Hover ── */}
             <div className="flex flex-wrap items-center gap-2.5 pt-2">
-              <Link
-                to="/resume"
+              <a
+                href={contact.resume || "https://drive.google.com/file/d/1qNzycHvflNO2lLynBD3ao9udHO0bJIYJ/view?usp=sharing"}
+                target="_blank"
+                rel="noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-purple-500/30 bg-purple-500/5 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:border-purple-500/60 hover:scale-[1.03] transition-all duration-300 shadow-sm"
               >
                 <FileText size={14} className="text-purple-500" />
-                <span>Interactive Resume</span>
-              </Link>
+                <span>View Resume (PDF)</span>
+              </a>
               {socialButtons.map((social, idx) =>
                 social.href ? (
                   <a

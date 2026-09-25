@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Sun, Moon, User, FolderOpen, Mail, FileText } from "lucide-react";
 import { motion } from "framer-motion";
+import { portfolioData } from "@/data/portfolioData";
 
 interface NavbarProps {
   activeSection: string;
@@ -12,6 +13,9 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, theme, onToggleTheme }) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const resumeUrl =
+    portfolioData.contact.resume ||
+    "https://drive.google.com/file/d/1qNzycHvflNO2lLynBD3ao9udHO0bJIYJ/view?usp=sharing";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,21 +26,20 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, theme
   }, []);
 
   const navItems = [
-    { id: "about", label: "About", icon: User, to: null },
-    { id: "projects", label: "Projects", icon: FolderOpen, to: "/projects" },
-    { id: "resume", label: "Resume", icon: FileText, to: "/resume" },
-    { id: "contact", label: "Contact", icon: Mail, to: null },
+    { id: "about", label: "About", icon: User, to: null, href: null },
+    { id: "projects", label: "Projects", icon: FolderOpen, to: "/projects", href: null },
+    // { id: "resume", label: "Resume", icon: FileText, to: null, href: resumeUrl },
+    { id: "contact", label: "Contact", icon: Mail, to: null, href: null },
   ];
 
   return (
     <>
       {/* ── Desktop Navbar (hidden on mobile and hidden on print) ── */}
       <div className={`hidden sm:block fixed left-1/2 -translate-x-1/2 z-50 w-full max-w-fit px-4 transition-all duration-500 print:hidden ${isScrolled ? "top-3" : "top-5"}`}>
-        <div className={`flex items-center gap-8 sm:gap-10 rounded-full px-7 py-2.5 backdrop-blur-2xl border shadow-lg transition-all duration-500 ${
-          isScrolled
+        <div className={`flex items-center gap-8 sm:gap-10 rounded-full px-7 py-2.5 backdrop-blur-2xl border shadow-lg transition-all duration-500 ${isScrolled
             ? "bg-white/80 dark:bg-zinc-950/85 border-zinc-200/90 dark:border-zinc-800/90 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
             : "bg-white/60 dark:bg-zinc-950/60 border-zinc-200/60 dark:border-zinc-800/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)]"
-        }`}>
+          }`}>
 
           {/* Brand Avatar */}
           <Link
@@ -62,15 +65,25 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, theme
           {/* Navigation Links */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             {navItems.map(item =>
-              item.to ? (
+              item.href ? (
+                <a
+                  key={item.id}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-300 outline-none text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                  title="Open Official Resume (PDF)"
+                >
+                  <span className="relative z-10">{item.label}</span>
+                </a>
+              ) : item.to ? (
                 <Link
                   key={item.id}
                   to={item.to}
-                  className={`relative px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-300 outline-none ${
-                    activeSection === item.id
+                  className={`relative px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-300 outline-none ${activeSection === item.id
                       ? "text-zinc-950 dark:text-white"
                       : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-                  }`}
+                    }`}
                   aria-current={activeSection === item.id ? "page" : undefined}
                 >
                   {activeSection === item.id && (
@@ -86,11 +99,10 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, theme
                 <button
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
-                  className={`relative px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-300 outline-none ${
-                    activeSection === item.id
+                  className={`relative px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-300 outline-none ${activeSection === item.id
                       ? "text-zinc-950 dark:text-white"
                       : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-                  }`}
+                    }`}
                   aria-current={activeSection === item.id ? "page" : undefined}
                 >
                   {activeSection === item.id && (
@@ -125,15 +137,26 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, theme
       <div className="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 print:hidden">
         <div className="flex items-center gap-1 rounded-full px-3 py-2 backdrop-blur-2xl bg-white/75 dark:bg-zinc-900/80 border border-zinc-200/60 dark:border-zinc-800/60 shadow-[0_4px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
           {navItems.map(item =>
-            item.to ? (
+            item.href ? (
+              <a
+                key={item.id}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 outline-none text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                aria-label={item.label}
+                title="Open Official Resume (PDF)"
+              >
+                <item.icon size={18} strokeWidth={1.8} />
+              </a>
+            ) : item.to ? (
               <Link
                 key={item.id}
                 to={item.to}
-                className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 outline-none ${
-                  activeSection === item.id
+                className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 outline-none ${activeSection === item.id
                     ? "bg-zinc-900 dark:bg-white text-white dark:text-black shadow-md"
                     : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                }`}
+                  }`}
                 aria-label={item.label}
                 aria-current={activeSection === item.id ? "page" : undefined}
               >
@@ -143,11 +166,10 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, theme
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
-                className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 outline-none ${
-                  activeSection === item.id
+                className={`relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 outline-none ${activeSection === item.id
                     ? "bg-zinc-900 dark:bg-white text-white dark:text-black shadow-md"
                     : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                }`}
+                  }`}
                 aria-label={item.label}
                 aria-current={activeSection === item.id ? "page" : undefined}
               >
