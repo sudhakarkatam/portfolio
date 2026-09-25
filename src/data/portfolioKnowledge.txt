@@ -148,7 +148,6 @@ Sudhakar holds a strong foundation in core Computer Science fundamentals: Data S
 
 Sudhakar Reddy Katam pursued a Bachelor of Technology (B.Tech) degree in Computer Science and Engineering (CSE) from Malla Reddy University, Hyderabad, graduated in 2025.
 - Core Computer Science Coursework: Data Structures & Algorithms (DSA), Object-Oriented Programming (OOP), Database Management Systems (DBMS), Operating Systems (OS), Computer Networks, System Design, and Software Engineering.
-- Practical Engineering Projects: Applied foundational principles to build real-world software products, including cryptographic file sharing, offline Android utilities, and AI-driven retrieval systems.
 
 ---
 @title: Certifications, Continuous Learning & Credentials
